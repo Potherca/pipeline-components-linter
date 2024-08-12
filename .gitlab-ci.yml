@@ -1,6 +1,5 @@
 ---
 go-lint:
-  stage: pre
   image: registry.gitlab.com/pipeline-components/go-lint:latest
   script:
     - golint ./...
