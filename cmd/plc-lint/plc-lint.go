@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"internal/check"
-	checks "internal/checks/PLC5"
+	plc4 "internal/checks/PLC04-folders"
+	plc5 "internal/checks/PLC05-files"
 	"internal/message"
 	"os"
-	"slices"
 )
 
 func listFiles(path string) (fileNames []string, err error) {
@@ -20,7 +20,6 @@ func listFiles(path string) (fileNames []string, err error) {
 			}
 			fileNames = append(fileNames, name)
 		}
-
 	}
 
 	return fileNames, err
@@ -38,30 +37,10 @@ func main() {
 
 	fileNames, err := listFiles(path)
 
-	var fileCodes = make(map[string]string)
-
-	fileCodes["app/"] = "PLC4001"
-	fileCodes[".github/"] = "PLC4002"
-
 	if err == nil {
-		requiredFiles := [2]string{
-			".github/",
-			"app/",
-		}
 
-		for _, file := range requiredFiles {
-			status := check.Fail
-			if slices.Contains(fileNames, file) {
-				status = check.Pass
-			}
-
-			checkMessage := fmt.Sprintf("The repository MUST contain a %s directory", file)
-			code := fileCodes[file]
-
-			messages = append(messages, message.CreateMessage(status, code, checkMessage))
-		}
-
-		messages = append(messages, checks.PLC5(fileNames)...)
+		messages = append(messages, plc4.PLC4(fileNames)...)
+		messages = append(messages, plc5.PLC5(fileNames)...)
 
 		for _, checkMessage := range messages {
 			var marker string
