@@ -7,8 +7,8 @@ import (
 	"slices"
 )
 
-func PLC5(fileNames []string) []string {
-	var messages []string
+func PLC5(fileNames []string) []message.Message {
+	var messages []message.Message
 
 	var fileCodes = make(map[string]string)
 
@@ -40,15 +40,11 @@ func PLC5(fileNames []string) []string {
 			status = check.Pass
 		}
 
-		checkMessage := fmt.Sprintf("The repository MUST contain a %s file", file)
-		code := fileCodes[file]
-
-		var messageMarker = message.Marker{
-			Pass: "✅",
-			Fail: "❌",
-		}
-
-		messages = append(messages, message.CreateMessage(status, code, checkMessage, messageMarker))
+		messages = append(messages, message.CreateMessage(
+			status,
+			fileCodes[file],
+			fmt.Sprintf("The repository MUST contain a %s file", file),
+		))
 	}
 
 	return messages

@@ -1,7 +1,6 @@
 package message
 
 import (
-	"fmt"
 	"internal/check"
 )
 
@@ -12,17 +11,16 @@ type Marker struct {
 	Skip       string
 }
 
-func CreateMessage(status check.Status, code string, message string, messageMarker Marker) string {
-	var marker string
+type Message struct {
+	Code    string
+	Message string
+	Status  check.Status
+}
 
-	switch status {
-	case check.Pass:
-		marker = messageMarker.Pass
-	case check.Fail:
-		marker = messageMarker.Fail
-	default:
-		panic("unhandled default case")
+func CreateMessage(status check.Status, code string, message string) Message {
+	return Message{
+		Code:    code,
+		Message: message,
+		Status:  status,
 	}
-
-	return fmt.Sprintf("%s %s %s\n", code, marker, message)
 }

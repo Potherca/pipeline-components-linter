@@ -29,6 +29,13 @@ func listFiles(path string) (fileNames []string, err error) {
 func main() {
 	path := "."
 
+	var messages []message.Message
+
+	var messageMarker = message.Marker{
+		Pass: "✅",
+		Fail: "❌",
+	}
+
 	fileNames, err := listFiles(path)
 
 	var fileCodes = make(map[string]string)
@@ -51,17 +58,25 @@ func main() {
 			checkMessage := fmt.Sprintf("The repository MUST contain a %s directory", file)
 			code := fileCodes[file]
 
-			var messageMarker = message.Marker{
-				Pass: "✅",
-				Fail: "❌",
-			}
-
-			fmt.Print(message.CreateMessage(status, code, checkMessage, messageMarker))
+			messages = append(messages, message.CreateMessage(status, code, checkMessage))
 		}
 
-		messages := checks.PLC5(fileNames)
+		messages = append(messages, checks.PLC5(fileNames)...)
+
 		for _, checkMessage := range messages {
-			fmt.Print(checkMessage)
+			var marker string
+
+			switch checkMessage.Status {
+			case check.Pass:
+				marker = messageMarker.Pass
+			case check.Fail:
+				marker = messageMarker.Fail
+			default:
+				errorMessage := fmt.Sprintf("Unknown or unsupported CheckStatus '%v'", checkMessage.Status)
+				panic(errorMessage)
+			}
+
+			fmt.Printf("%s %s %s\n", checkMessage.Code, marker, checkMessage.Message)
 		}
 	}
 }
