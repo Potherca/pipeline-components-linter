@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"internal/check"
+	checks "internal/checks/PLC5"
 	"internal/message"
 	"os"
 	"slices"
@@ -34,44 +35,20 @@ func main() {
 
 	fileCodes["app/"] = "PLC4001"
 	fileCodes[".github/"] = "PLC4002"
-	fileCodes[".gitignore"] = "PLC5001"
-	fileCodes[".gitlab-ci.yml"] = "PLC5002"
-	fileCodes[".mdlrc"] = "PLC5003"
-	fileCodes[".yamllint"] = "PLC5004"
-	fileCodes["action.yml"] = "PLC5005"
-	fileCodes["Dockerfile"] = "PLC5006"
-	fileCodes["LICENSE"] = "PLC5007"
-	fileCodes["README.md"] = "PLC5008"
-	fileCodes["renovate.json"] = "PLC5009"
 
 	if err == nil {
-		requiredFiles := [11]string{
+		requiredFiles := [2]string{
 			".github/",
 			"app/",
-			".gitignore",
-			".gitlab-ci.yml",
-			".mdlrc",
-			".yamllint",
-			"action.yml",
-			"Dockerfile",
-			"LICENSE",
-			"README.md",
-			"renovate.json",
 		}
 
 		for _, file := range requiredFiles {
-			fileType := "file"
-
-			if file[len(file)-1:] == "/" {
-				fileType = "directory"
-			}
-
 			status := check.Fail
 			if slices.Contains(fileNames, file) {
 				status = check.Pass
 			}
 
-			checkMessage := fmt.Sprintf("The repository MUST contain a %s %s", file, fileType)
+			checkMessage := fmt.Sprintf("The repository MUST contain a %s directory", file)
 			code := fileCodes[file]
 
 			var messageMarker = message.Marker{
@@ -80,6 +57,11 @@ func main() {
 			}
 
 			fmt.Print(message.CreateMessage(status, code, checkMessage, messageMarker))
+		}
+
+		messages := checks.PLC5(fileNames)
+		for _, checkMessage := range messages {
+			fmt.Print(checkMessage)
 		}
 	}
 }
