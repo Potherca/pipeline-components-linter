@@ -1,9 +1,15 @@
 module gitlab.com/pipeline-components/pipeline-component-linter
 
-go 1.22.6
+go 1.22
 
-require internal/check v0.1.0
-replace internal/check => ./internal/check
+require (
+	internal/check v0.1.0
+	internal/checks v0.1.0
+	internal/message v0.1.0
+)
 
-require internal/message v0.1.0
-replace internal/message => ./internal/message
+replace (
+	internal/check => ./internal/check
+	internal/checks => ./internal/checks
+	internal/message => ./internal/message
+)

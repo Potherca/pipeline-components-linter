@@ -1,6 +1,6 @@
 module checks
 
-go 1.22.6
+go 1.22
 
 require (
 	internal/check v0.1.0
@@ -8,6 +8,6 @@ require (
 )
 
 replace (
-	internal/message => ../message
 	internal/check => ../check
+	internal/message => ../message
 )
