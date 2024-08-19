@@ -16,21 +16,27 @@ type CommandError struct {
 	message string
 }
 
+func CreateCommandError(
+	code int,
+	message string,
+) CommandError {
+	return CommandError{
+		code:    code,
+		message: message,
+	}
+}
+
 func getPath(projectPath string) (string, CommandError) {
 	var err error
 
-	commandError := CommandError{
-		code:    exitcodes.Ok,
-		message: "",
-	}
+	commandError := CreateCommandError(exitcodes.Ok, "")
 
 	projectPath, err = filepath.Abs(projectPath)
 
 	if err != nil {
-		commandError = CommandError{
-			code:    exitcodes.UnknownErrorOccurred,
-			message: fmt.Sprintf("could not get absolute path for '%s': %v", projectPath, err),
-		}
+		commandError = CreateCommandError(
+			exitcodes.UnknownErrorOccurred,
+			fmt.Sprintf("could not get absolute path for '%s': %v", projectPath, err))
 	} else {
 		var fileInfo os.FileInfo
 
@@ -38,42 +44,35 @@ func getPath(projectPath string) (string, CommandError) {
 
 		if err != nil {
 			if os.IsNotExist(err) {
-				commandError = CommandError{
-					code:    exitcodes.CouldNotFindDirectory,
-					message: fmt.Sprintf("provided path '%s' does not exist", projectPath),
-				}
+				commandError = CreateCommandError(
+					exitcodes.CouldNotFindDirectory,
+					fmt.Sprintf("provided path '%s' does not exist", projectPath))
 			} else {
-				commandError = CommandError{
-					code:    exitcodes.UnknownErrorOccurred,
-					message: fmt.Sprintf("could not stat path '%s': %v", projectPath, err),
-				}
+				commandError = CreateCommandError(
+					exitcodes.UnknownErrorOccurred,
+					fmt.Sprintf("could not stat path '%s': %v", projectPath, err))
 			}
 		} else if !fileInfo.IsDir() {
-			commandError = CommandError{
-				code:    exitcodes.InvalidParameter,
-				message: fmt.Sprintf("provided path '%s' is not a directory", projectPath),
-			}
+			commandError = CreateCommandError(
+				exitcodes.InvalidParameter,
+				fmt.Sprintf("provided path '%s' is not a directory", projectPath))
 		} // else: projectPath is an existing directory
 	}
 
 	return projectPath, commandError
 }
 
-func listFiles(path string) ([]string, CommandError) {
-	var fileNames []string
+func loadFiles(path string) (map[string]string, CommandError) {
+	var fileMap = make(map[string]string)
 
-	commandError := CommandError{
-		code:    exitcodes.Ok,
-		message: "",
-	}
+	commandError := CreateCommandError(exitcodes.Ok, "")
 
 	files, err := os.ReadDir(path)
 
 	if err != nil {
-		commandError = CommandError{
-			code:    exitcodes.CouldNotRead,
-			message: fmt.Sprintf("could not read files from '%s': %w", path, err),
-		}
+		commandError = CreateCommandError(
+			exitcodes.CouldNotRead,
+			fmt.Sprintf("could not read files from '%s': %v", path, err))
 	} else {
 		for _, file := range files {
 			name := file.Name()
