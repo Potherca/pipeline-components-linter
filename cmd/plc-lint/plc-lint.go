@@ -6,6 +6,10 @@ import (
 	plc4 "internal/checks/PLC04-folders"
 	plc5 "internal/checks/PLC05-files"
 	plc8 "internal/checks/PLC08-mdlrc-file"
+	plc9 "internal/checks/PLC09-yamllint-file"
+	plc14 "internal/checks/PLC14-renovate.json-file"
+	plc17 "internal/checks/PLC17-FUNDING.yml-file"
+	plc19 "internal/checks/PLC19-release.yml-file"
 	"internal/exitcodes"
 	"internal/message"
 	"internal/repositoryContents"
@@ -152,6 +156,10 @@ func main() {
 	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc5.PLC5(files)...)
 	checks = append(checks, plc8.PLC8(files, skeletonContent)...)
+	checks = append(checks, plc9.PLC9(files, skeletonContent)...)
+	checks = append(checks, plc14.PLC14(files, skeletonContent)...)
+	checks = append(checks, plc17.PLC17(files, skeletonContent)...)
+	checks = append(checks, plc19.PLC19(files, skeletonContent)...)
 
 	for _, checkMessage := range checks {
 		var marker string
