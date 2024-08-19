@@ -111,8 +111,8 @@ func main() {
 	messageMarker := message.Marker{
 		Pass:       "✅",
 		Fail:       "❌",
-		Skip:       "⚠️",
-		Incomplete: "❓",
+		Skip:       "⏭️",
+		Incomplete: "⚠️",
 	}
 
 	checks = append(checks, plc4.PLC4(fileNames)...)
