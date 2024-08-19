@@ -33,9 +33,11 @@ require (
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	internal/asserts v0.1.0 // indirect
 )
 
 replace (
+	internal/asserts => ./internal/asserts
 	internal/check => ./internal/check
 	internal/checks => ./internal/checks
 	internal/exitcodes => ./internal/exitcodes
