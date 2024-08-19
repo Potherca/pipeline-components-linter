@@ -5,8 +5,10 @@ import (
 	"internal/check"
 	plc4 "internal/checks/PLC04-folders"
 	plc5 "internal/checks/PLC05-files"
+	plc8 "internal/checks/PLC08-mdlrc-file"
 	"internal/exitcodes"
 	"internal/message"
+	"internal/repositoryContents"
 	"os"
 	"path/filepath"
 )
@@ -98,6 +100,21 @@ func loadFiles(path string) (map[string]string, CommandError) {
 	return fileMap, commandError
 }
 
+func getSkeletonRepoContent(repo string) (map[string]string, CommandError) {
+	commandError := CreateCommandError(exitcodes.Ok, "")
+
+	files, err := repositoryContents.GetContent(repo)
+
+	if err != nil {
+		commandError = CreateCommandError(
+			exitcodes.UnknownErrorOccurred,
+			fmt.Sprintf("could not get content from '%s': %v", repo, err),
+		)
+	}
+
+	return files, commandError
+}
+
 func main() {
 	projectPath := "."
 	if len(os.Args) > 1 {
@@ -116,6 +133,12 @@ func main() {
 		os.Exit(fileListError.code)
 	}
 
+	skeletonContent, repoError := getSkeletonRepoContent("https://gitlab.com/pipeline-components/org/skeleton.git")
+	if repoError.code != exitcodes.Ok {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", repoError.message)
+		os.Exit(repoError.code)
+	}
+
 	var checks []message.Message
 
 	// @TODO: Markers should be overridable from a configuration file
@@ -128,6 +151,7 @@ func main() {
 
 	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc5.PLC5(files)...)
+	checks = append(checks, plc8.PLC8(files, skeletonContent)...)
 
 	for _, checkMessage := range checks {
 		var marker string
