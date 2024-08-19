@@ -86,9 +86,12 @@ func main() {
 
 	var checks []message.Message
 
-	var messageMarker = message.Marker{
-		Pass: "✅",
-		Fail: "❌",
+	// @TODO: Markers should be overridable from a configuration file
+	messageMarker := message.Marker{
+		Pass:       "✅",
+		Fail:       "❌",
+		Skip:       "⚠️",
+		Incomplete: "❓",
 	}
 
 	fileNames, err := listFiles(projectPath)
@@ -104,15 +107,19 @@ func main() {
 	for _, checkMessage := range checks {
 		var marker string
 
-			switch checkMessage.Status {
-			case check.Pass:
-				marker = messageMarker.Pass
-			case check.Fail:
-				marker = messageMarker.Fail
-			default:
-				errorMessage := fmt.Sprintf("Unknown or unsupported CheckStatus '%v'", checkMessage.Status)
-				panic(errorMessage)
-			}
+		switch checkMessage.Status {
+		case check.Pass:
+			marker = messageMarker.Pass
+		case check.Fail:
+			marker = messageMarker.Fail
+		case check.Skip:
+			marker = messageMarker.Skip
+		case check.Incomplete:
+			marker = messageMarker.Incomplete
+		default:
+			errorMessage := fmt.Sprintf("Unknown or unsupported CheckStatus '%v'", checkMessage.Status)
+			panic(errorMessage)
+		}
 
 			fmt.Printf("%s %s %s\n", checkMessage.Code, marker, checkMessage.Message)
 		}
