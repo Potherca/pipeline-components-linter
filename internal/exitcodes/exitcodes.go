@@ -60,13 +60,16 @@ const (
 	// Other errors (80 range)
 	// ------------------------------------------------------------------------.
 
-	CouldNotFind   int = 80
-	NotCorrectType int = 81
-	NotSupported   int = 82
-	CouldNotCreate int = 83
-	CouldNotUpdate int = 84
-	CouldNotDelete int = 85
-	CouldNotMove   int = 86
+	CouldNotFind       int = 80
+	CouldNotCreate     int = 81
+	CouldNotUpdate     int = 82
+	CouldNotDelete     int = 83
+	CouldNotMove       int = 84
+	CouldNotRead       int = 85
+	CouldNotReadFile   int = 86
+	CouldNotReadFolder int = 87
+	NotCorrectType     int = 88
+	NotSupported       int = 89
 	// ========================================================================.
 
 	// ========================================================================.
