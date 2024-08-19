@@ -121,7 +121,6 @@ func main() {
 			panic(errorMessage)
 		}
 
-			fmt.Printf("%s %s %s\n", checkMessage.Code, marker, checkMessage.Message)
-		}
+		_, _ = fmt.Fprintf(os.Stdout, "%s %s %s\n", checkMessage.Code, marker, checkMessage.Message)
 	}
 }
