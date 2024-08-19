@@ -84,6 +84,8 @@ func main() {
 		os.Exit(pathError.code)
 	}
 
+	var checks []message.Message
+
 	var messageMarker = message.Marker{
 		Pass: "✅",
 		Fail: "❌",
@@ -96,11 +98,11 @@ func main() {
 		os.Exit(1)
 	}
 
-		messages = append(messages, plc4.PLC4(fileNames)...)
-		messages = append(messages, plc5.PLC5(fileNames)...)
+	checks = append(checks, plc4.PLC4(fileNames)...)
+	checks = append(checks, plc5.PLC5(fileNames)...)
 
-		for _, checkMessage := range messages {
-			var marker string
+	for _, checkMessage := range checks {
+		var marker string
 
 			switch checkMessage.Status {
 			case check.Pass:
