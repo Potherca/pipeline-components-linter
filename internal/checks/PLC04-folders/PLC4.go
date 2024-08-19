@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"internal/check"
 	"internal/message"
+	"maps"
 	"slices"
 )
 
-func PLC4(fileNames []string) []message.Message {
+func PLC4(files map[string]string) []message.Message {
 	var messages []message.Message
 
 	var fileCodes = make(map[string]string)
@@ -19,6 +20,8 @@ func PLC4(fileNames []string) []message.Message {
 		".github/",
 		"app/",
 	}
+
+	fileNames := slices.Collect(maps.Keys(files))
 
 	for _, file := range requiredFiles {
 		status := check.Fail

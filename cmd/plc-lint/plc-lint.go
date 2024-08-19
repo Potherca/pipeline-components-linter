@@ -77,14 +77,25 @@ func loadFiles(path string) (map[string]string, CommandError) {
 		for _, file := range files {
 			name := file.Name()
 			if file.IsDir() {
-				name += "/"
-			}
+				fileMap[name+"/"] = "__DIR__"
+			} else {
+				contentPath := filepath.Join(path, name)
 
-			fileNames = append(fileNames, name)
+				contents, err := os.ReadFile(contentPath)
+
+				if err != nil {
+					commandError = CreateCommandError(
+						exitcodes.CouldNotRead,
+						fmt.Sprintf("could not read file '%s': %v", name, err))
+					break
+				}
+
+				fileMap[name] = string(contents)
+			}
 		}
 	}
 
-	return fileNames, commandError
+	return fileMap, commandError
 }
 
 func main() {
@@ -99,7 +110,7 @@ func main() {
 		os.Exit(pathError.code)
 	}
 
-	fileNames, fileListError := listFiles(projectPath)
+	files, fileListError := loadFiles(projectPath)
 	if fileListError.code != exitcodes.Ok {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", fileListError.message)
 		os.Exit(fileListError.code)
@@ -115,8 +126,8 @@ func main() {
 		Incomplete: "⚠️",
 	}
 
-	checks = append(checks, plc4.PLC4(fileNames)...)
-	checks = append(checks, plc5.PLC5(fileNames)...)
+	checks = append(checks, plc4.PLC4(files)...)
+	checks = append(checks, plc5.PLC5(files)...)
 
 	for _, checkMessage := range checks {
 		var marker string
