@@ -8,7 +8,9 @@ import (
 	plc8 "internal/checks/PLC08-mdlrc-file"
 	plc9 "internal/checks/PLC09-yamllint-file"
 	plc14 "internal/checks/PLC14-renovate.json-file"
+	plc16 "internal/checks/PLC16-github-folder"
 	plc17 "internal/checks/PLC17-FUNDING.yml-file"
+	plc18 "internal/checks/PLC18-github-workflows-folder"
 	plc19 "internal/checks/PLC19-release.yml-file"
 	"internal/directoryList"
 	"internal/exitcodes"
@@ -158,7 +160,9 @@ func main() {
 	checks = append(checks, plc8.PLC8(files, skeletonContent)...)
 	checks = append(checks, plc9.PLC9(files, skeletonContent)...)
 	checks = append(checks, plc14.PLC14(files, skeletonContent)...)
+	checks = append(checks, plc16.PLC16(files)...)
 	checks = append(checks, plc17.PLC17(files, skeletonContent)...)
+	checks = append(checks, plc18.PLC18(files)...)
 	checks = append(checks, plc19.PLC19(files, skeletonContent)...)
 
 	for _, checkMessage := range checks {
