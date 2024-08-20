@@ -1,16 +1,11 @@
 package checks
 
 import (
-	"fmt"
-	"internal/check"
+	"internal/asserts"
 	"internal/message"
-	"maps"
-	"slices"
 )
 
 func PLC5(files map[string]string) []message.Message {
-	var messages []message.Message
-
 	var fileCodes = make(map[string]string)
 
 	fileCodes[".gitignore"] = "PLC5001"
@@ -23,32 +18,5 @@ func PLC5(files map[string]string) []message.Message {
 	fileCodes["README.md"] = "PLC5008"
 	fileCodes["renovate.json"] = "PLC5009"
 
-	requiredFiles := [9]string{
-		".gitignore",
-		".gitlab-ci.yml",
-		".mdlrc",
-		".yamllint",
-		"action.yml",
-		"Dockerfile",
-		"LICENSE",
-		"README.md",
-		"renovate.json",
-	}
-
-	fileNames := slices.Collect(maps.Keys(files))
-
-	for _, file := range requiredFiles {
-		status := check.Fail
-		if slices.Contains(fileNames, file) {
-			status = check.Pass
-		}
-
-		messages = append(messages, message.CreateMessage(
-			status,
-			fileCodes[file],
-			fmt.Sprintf("The repository MUST contain a %s file", file),
-		))
-	}
-
-	return messages
+	return asserts.FileExists(files, fileCodes)
 }
