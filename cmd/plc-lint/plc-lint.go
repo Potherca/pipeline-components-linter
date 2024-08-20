@@ -36,6 +36,30 @@ func CreateCommandError(
 	}
 }
 
+func getFileList() map[string]string {
+	projectPath := "."
+
+	if len(os.Args) > 1 {
+		projectPath = os.Args[1]
+	}
+
+	projectPath, pathError := getPath(projectPath)
+
+	if pathError.code != exitcodes.Ok {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError.message)
+		os.Exit(pathError.code)
+	}
+
+	files, fileListError := loadFiles(projectPath)
+
+	if fileListError.code != exitcodes.Ok {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", fileListError.message)
+		os.Exit(fileListError.code)
+	}
+
+	return files
+}
+
 func getPath(projectPath string) (string, CommandError) {
 	var err error
 
@@ -70,6 +94,40 @@ func getPath(projectPath string) (string, CommandError) {
 	}
 
 	return projectPath, commandError
+}
+
+func getSkeletonFileList() map[string]string {
+	var (
+		fileListError   CommandError
+		repoError       CommandError
+		skeletonContent map[string]string
+	)
+
+	if len(os.Args) > 2 {
+		skeletonPath := os.Args[2]
+		skeletonPath, pathError2 := getPath(skeletonPath)
+
+		if pathError2.code != exitcodes.Ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError2.message)
+			os.Exit(pathError2.code)
+		}
+
+		skeletonContent, fileListError = loadFiles(skeletonPath)
+
+		if fileListError.code != exitcodes.Ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", fileListError.message)
+			os.Exit(fileListError.code)
+		}
+	} else {
+		skeletonContent, repoError = getSkeletonRepoContent("https://gitlab.com/pipeline-components/org/skeleton.git")
+
+		if repoError.code != exitcodes.Ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", repoError.message)
+			os.Exit(repoError.code)
+		}
+	}
+
+	return skeletonContent
 }
 
 func loadFiles(path string) (map[string]string, CommandError) {
@@ -122,28 +180,8 @@ func getSkeletonRepoContent(repo string) (map[string]string, CommandError) {
 }
 
 func main() {
-	projectPath := "."
-	if len(os.Args) > 1 {
-		projectPath = os.Args[1]
-	}
-	projectPath, pathError := getPath(projectPath)
-
-	if pathError.code != exitcodes.Ok {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError.message)
-		os.Exit(pathError.code)
-	}
-
-	files, fileListError := loadFiles(projectPath)
-	if fileListError.code != exitcodes.Ok {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", fileListError.message)
-		os.Exit(fileListError.code)
-	}
-
-	skeletonContent, repoError := getSkeletonRepoContent("https://gitlab.com/pipeline-components/org/skeleton.git")
-	if repoError.code != exitcodes.Ok {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", repoError.message)
-		os.Exit(repoError.code)
-	}
+	files := getFileList()
+	skeletonContent := getSkeletonFileList()
 
 	var checks []message.Message
 
