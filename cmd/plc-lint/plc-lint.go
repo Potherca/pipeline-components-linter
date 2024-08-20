@@ -10,11 +10,13 @@ import (
 	plc14 "internal/checks/PLC14-renovate.json-file"
 	plc17 "internal/checks/PLC17-FUNDING.yml-file"
 	plc19 "internal/checks/PLC19-release.yml-file"
+	"internal/directoryList"
 	"internal/exitcodes"
 	"internal/message"
 	"internal/repositoryContents"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type CommandError struct {
@@ -73,7 +75,7 @@ func loadFiles(path string) (map[string]string, CommandError) {
 
 	commandError := CreateCommandError(exitcodes.Ok, "")
 
-	files, err := os.ReadDir(path)
+	files, err := directoryList.ListContent(path, "")
 
 	if err != nil {
 		commandError = CreateCommandError(
@@ -81,22 +83,20 @@ func loadFiles(path string) (map[string]string, CommandError) {
 			fmt.Sprintf("could not read files from '%s': %v", path, err))
 	} else {
 		for _, file := range files {
-			name := file.Name()
-			if file.IsDir() {
-				fileMap[name+"/"] = "__DIR__"
+			if strings.HasSuffix(file, "/") {
+				fileMap[file] = "__DIR__"
 			} else {
-				contentPath := filepath.Join(path, name)
-
+				contentPath := filepath.Join(path, file)
 				contents, err := os.ReadFile(contentPath)
 
 				if err != nil {
 					commandError = CreateCommandError(
 						exitcodes.CouldNotRead,
-						fmt.Sprintf("could not read file '%s': %v", name, err))
+						fmt.Sprintf("could not read file '%s': %v", file, err))
 					break
 				}
 
-				fileMap[name] = string(contents)
+				fileMap[file] = string(contents)
 			}
 		}
 	}
