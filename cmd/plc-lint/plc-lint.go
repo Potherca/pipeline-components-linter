@@ -71,6 +71,38 @@ func getFileList() map[string]string {
 	return files
 }
 
+func getMarkerForStatus(messageStatus check.Status, messageMarker message.Marker) string {
+	var marker string
+
+	switch messageStatus {
+	case check.Pass:
+		marker = messageMarker.Pass
+	case check.Fail:
+		marker = messageMarker.Fail
+	case check.Skip:
+		marker = messageMarker.Skip
+	case check.Incomplete:
+		marker = messageMarker.Incomplete
+	default:
+		errorMessage := fmt.Sprintf("Unknown or unsupported CheckStatus '%v'", messageStatus)
+		panic(errorMessage)
+	}
+
+	return marker
+}
+
+func getMessageMarkers() message.Marker {
+	// @TODO: Markers should be overridable from a configuration file
+	messageMarker := message.Marker{
+		Pass:       "✅",
+		Fail:       "❌",
+		Skip:       "⏭ ",
+		Incomplete: "⚠️",
+	}
+
+	return messageMarker
+}
+
 func getPath(projectPath string) (string, CommandError) {
 	var err error
 
@@ -107,40 +139,6 @@ func getPath(projectPath string) (string, CommandError) {
 	return projectPath, commandError
 }
 
-func getSkeletonFileList() map[string]string {
-	var (
-		fileListError   CommandError
-		repoError       CommandError
-		skeletonContent map[string]string
-	)
-
-	if len(os.Args) > 2 {
-		skeletonPath := os.Args[2]
-		skeletonPath, pathError2 := getPath(skeletonPath)
-
-		if pathError2.code != exitcodes.Ok {
-			_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError2.message)
-			os.Exit(pathError2.code)
-		}
-
-		skeletonContent, fileListError = loadFiles(skeletonPath)
-
-		if fileListError.code != exitcodes.Ok {
-			_, _ = fmt.Fprintf(os.Stderr, "%v\n", fileListError.message)
-			os.Exit(fileListError.code)
-		}
-	} else {
-		skeletonContent, repoError = getSkeletonRepoContent("https://gitlab.com/pipeline-components/org/skeleton.git")
-
-		if repoError.code != exitcodes.Ok {
-			_, _ = fmt.Fprintf(os.Stderr, "%v\n", repoError.message)
-			os.Exit(repoError.code)
-		}
-	}
-
-	return skeletonContent
-}
-
 func loadFiles(path string) (map[string]string, CommandError) {
 	var fileMap = make(map[string]string)
 
@@ -175,7 +173,41 @@ func loadFiles(path string) (map[string]string, CommandError) {
 	return fileMap, commandError
 }
 
-func getSkeletonRepoContent(repo string) (map[string]string, CommandError) {
+func loadSkeletonFileList() map[string]string {
+	var (
+		fileListError   CommandError
+		repoError       CommandError
+		skeletonContent map[string]string
+	)
+
+	if len(os.Args) > 2 {
+		skeletonPath := os.Args[2]
+		skeletonPath, pathError2 := getPath(skeletonPath)
+
+		if pathError2.code != exitcodes.Ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError2.message)
+			os.Exit(pathError2.code)
+		}
+
+		skeletonContent, fileListError = loadFiles(skeletonPath)
+
+		if fileListError.code != exitcodes.Ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", fileListError.message)
+			os.Exit(fileListError.code)
+		}
+	} else {
+		skeletonContent, repoError = loadSkeletonRepoContent("https://gitlab.com/pipeline-components/org/skeleton.git")
+
+		if repoError.code != exitcodes.Ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", repoError.message)
+			os.Exit(repoError.code)
+		}
+	}
+
+	return skeletonContent
+}
+
+func loadSkeletonRepoContent(repo string) (map[string]string, CommandError) {
 	commandError := CreateCommandError(exitcodes.Ok, "")
 
 	files, err := repositoryContents.GetContent(repo)
@@ -190,19 +222,8 @@ func getSkeletonRepoContent(repo string) (map[string]string, CommandError) {
 	return files, commandError
 }
 
-func main() {
-	files := getFileList()
-	skeletonContent := getSkeletonFileList()
-
+func runChecks(files map[string]string, skeletonContent map[string]string) []message.Message {
 	var checks []message.Message
-
-	// @TODO: Markers should be overridable from a configuration file
-	messageMarker := message.Marker{
-		Pass:       "✅",
-		Fail:       "❌",
-		Skip:       "⏭️",
-		Incomplete: "⚠️",
-	}
 
 	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc5.PLC5(files)...)
@@ -214,22 +235,18 @@ func main() {
 	checks = append(checks, plc18.PLC18(files)...)
 	checks = append(checks, plc19.PLC19(files, skeletonContent)...)
 
-	for _, checkMessage := range checks {
-		var marker string
+	return checks
+}
 
-		switch checkMessage.Status {
-		case check.Pass:
-			marker = messageMarker.Pass
-		case check.Fail:
-			marker = messageMarker.Fail
-		case check.Skip:
-			marker = messageMarker.Skip
-		case check.Incomplete:
-			marker = messageMarker.Incomplete
-		default:
-			errorMessage := fmt.Sprintf("Unknown or unsupported CheckStatus '%v'", checkMessage.Status)
-			panic(errorMessage)
-		}
+func main() {
+	files := getFileList()
+	messageMarkers := getMessageMarkers()
+	skeletonContent := loadSkeletonFileList()
+
+	checks := runChecks(files, skeletonContent)
+
+	for _, checkMessage := range checks {
+		marker := getMarkerForStatus(checkMessage.Status, messageMarkers)
 
 		_, _ = fmt.Fprintf(os.Stdout, "%s %s %s\n", checkMessage.Code, marker, checkMessage.Message)
 	}
