@@ -17,7 +17,7 @@ import (
 	// plc12 "internal/checks/PLC12-LICENSE-file"
 	// plc13 "internal/checks/PLC13-README.md-file"
 	plc14 "internal/checks/PLC14-renovate.json-file"
-	// plc15 "internal/checks/PLC15-app-folder"
+	plc15 "internal/checks/PLC15-app-folder"
 	plc16 "internal/checks/PLC16-github-folder"
 	plc17 "internal/checks/PLC17-FUNDING.yml-file"
 	plc18 "internal/checks/PLC18-github-workflows-folder"
@@ -230,6 +230,7 @@ func runChecks(files map[string]string, skeletonContent map[string]string) []mes
 	checks = append(checks, plc8.PLC8(files, skeletonContent)...)
 	checks = append(checks, plc9.PLC9(files, skeletonContent)...)
 	checks = append(checks, plc14.PLC14(files, skeletonContent)...)
+	checks = append(checks, plc15.PLC15(files)...)
 	checks = append(checks, plc16.PLC16(files)...)
 	checks = append(checks, plc17.PLC17(files, skeletonContent)...)
 	checks = append(checks, plc18.PLC18(files)...)
