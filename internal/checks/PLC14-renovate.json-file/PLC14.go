@@ -5,10 +5,12 @@ import (
 	"internal/message"
 )
 
-func listCodes() (Codes map[string]string) {
-	Codes["PLC14001"] = "The `renovate.json` file MUST be identical to `renovate.json` file in the skeleton repository"
+func listCodes() map[string]string {
+	codes := make(map[string]string)
 
-	return Codes
+	codes["PLC14001"] = "The `renovate.json` file MUST be identical to `renovate.json` file in the skeleton repository"
+
+	return codes
 }
 
 func PLC14(files map[string]string, repo map[string]string) []message.Message {

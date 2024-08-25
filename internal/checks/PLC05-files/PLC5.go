@@ -5,18 +5,20 @@ import (
 	"internal/message"
 )
 
-func listCodes() (Codes map[string]string) {
-	Codes["PLC5001"] = "The repository MUST contain a `.gitignore` file"
-	Codes["PLC5002"] = "The repository MUST contain a `.gitlab-ci.yml` file"
-	Codes["PLC5003"] = "The repository MUST contain a `.mdlrc` file"
-	Codes["PLC5004"] = "The repository MUST contain a `.yamllint` file"
-	Codes["PLC5005"] = "The repository MUST contain a `action.yml` file"
-	Codes["PLC5006"] = "The repository MUST contain a `Dockerfile` file"
-	Codes["PLC5007"] = "The repository MUST contain a `LICENSE` file"
-	Codes["PLC5008"] = "The repository MUST contain a `README.md` file"
-	Codes["PLC5009"] = "The repository MUST contain a `renovate.json` file"
+func listCodes() map[string]string {
+	codes := make(map[string]string)
 
-	return Codes
+	codes["PLC5001"] = "The repository MUST contain a `.gitignore` file"
+	codes["PLC5002"] = "The repository MUST contain a `.gitlab-ci.yml` file"
+	codes["PLC5003"] = "The repository MUST contain a `.mdlrc` file"
+	codes["PLC5004"] = "The repository MUST contain a `.yamllint` file"
+	codes["PLC5005"] = "The repository MUST contain a `action.yml` file"
+	codes["PLC5006"] = "The repository MUST contain a `Dockerfile` file"
+	codes["PLC5007"] = "The repository MUST contain a `LICENSE` file"
+	codes["PLC5008"] = "The repository MUST contain a `README.md` file"
+	codes["PLC5009"] = "The repository MUST contain a `renovate.json` file"
+
+	return codes
 }
 
 func PLC5(files map[string]string) []message.Message {

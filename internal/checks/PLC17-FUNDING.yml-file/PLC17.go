@@ -5,10 +5,12 @@ import (
 	"internal/message"
 )
 
-func listCodes() (Codes map[string]string) {
-	Codes["PLC17001"] = "The `FUNDING.yml` file MUST be identical to `FUNDING.yml` file in the skeleton repository"
+func listCodes() map[string]string {
+	codes := make(map[string]string)
 
-	return Codes
+	codes["PLC17001"] = "The `FUNDING.yml` file MUST be identical to `FUNDING.yml` file in the skeleton repository"
+
+	return codes
 }
 
 func PLC17(files map[string]string, repo map[string]string) []message.Message {

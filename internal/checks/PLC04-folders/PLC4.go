@@ -5,11 +5,13 @@ import (
 	"internal/message"
 )
 
-func listCodes() (Codes map[string]string) {
-	Codes["PLC4001"] = "The repository MUST contain an `app/` folder"
-	Codes["PLC4002"] = "The repository MUST contain a `.github/` folder"
+func listCodes() map[string]string {
+	codes := make(map[string]string)
 
-	return Codes
+	codes["PLC4001"] = "The repository MUST contain an `app/` folder"
+	codes["PLC4002"] = "The repository MUST contain a `.github/` folder"
+
+	return codes
 }
 
 func PLC4(files map[string]string) []message.Message {

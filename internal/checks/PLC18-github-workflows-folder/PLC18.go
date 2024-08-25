@@ -5,10 +5,12 @@ import (
 	"internal/message"
 )
 
-func listCodes() (Codes map[string]string) {
-	Codes["PLC18001"] = "The `workflows/` folder MUST contain a `release.yml` file"
+func listCodes() map[string]string {
+	codes := make(map[string]string)
 
-	return Codes
+	codes["PLC18001"] = "The `workflows/` folder MUST contain a `release.yml` file"
+
+	return codes
 }
 
 func PLC18(files map[string]string) []message.Message {

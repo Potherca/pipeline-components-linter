@@ -5,10 +5,12 @@ import (
 	"internal/message"
 )
 
-func listCodes() (Codes map[string]string) {
-	Codes["PLC8001"] = "The `.mdlrc` file MUST be identical to `.mdlrc` file in the skeleton repository"
+func listCodes() map[string]string {
+	codes := make(map[string]string)
 
-	return Codes
+	codes["PLC8001"] = "The `.mdlrc` file MUST be identical to `.mdlrc` file in the skeleton repository"
+
+	return codes
 }
 
 func PLC8(files map[string]string, repo map[string]string) []message.Message {
