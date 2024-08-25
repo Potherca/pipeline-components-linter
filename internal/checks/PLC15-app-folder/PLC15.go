@@ -1,24 +1,10 @@
 package checks
 
 import (
+	"internal/asserts"
 	"internal/check"
 	"internal/message"
-	"strings"
 )
-
-func directoryIsEmpty(files map[string]string, targetFile string) bool {
-	empty := true
-
-	for key := range files {
-		path := strings.Split(key, "/")[0] + "/"
-
-		if path == targetFile && key != targetFile {
-			empty = false
-			break
-		}
-	}
-	return empty
-}
 
 func listCodes() map[string]string {
 	codes := make(map[string]string)
@@ -48,7 +34,7 @@ func PLC15(files map[string]string) []message.Message {
 	if _, ok = files[targetFile]; !ok {
 		status["PLC15001"] = check.Skip
 	} else {
-		empty := directoryIsEmpty(files, targetFile)
+		empty := asserts.DirectoryIsEmpty(files, targetFile)
 
 		if !empty {
 			status["PLC15001"] = check.Pass
