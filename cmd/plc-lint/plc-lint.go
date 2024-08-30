@@ -47,20 +47,7 @@ func CreateCommandError(
 	}
 }
 
-func getFileList() map[string]string {
-	projectPath := "."
-
-	if len(os.Args) > 1 {
-		projectPath = os.Args[1]
-	}
-
-	projectPath, pathError := getPath(projectPath)
-
-	if pathError.code != exitcodes.Ok {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError.message)
-		os.Exit(pathError.code)
-	}
-
+func getFileList(projectPath string) map[string]string {
 	files, fileListError := loadFiles(projectPath)
 
 	if fileListError.code != exitcodes.Ok {
@@ -137,6 +124,23 @@ func getPath(projectPath string) (string, CommandError) {
 	}
 
 	return projectPath, commandError
+}
+
+func getProjectPath() string {
+	projectPath := "."
+
+	if len(os.Args) > 1 {
+		projectPath = os.Args[1]
+	}
+
+	projectPath, pathError := getPath(projectPath)
+
+	if pathError.code != exitcodes.Ok {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError.message)
+		os.Exit(pathError.code)
+	}
+
+	return projectPath
 }
 
 func loadFiles(path string) (map[string]string, CommandError) {
@@ -240,7 +244,9 @@ func runChecks(files map[string]string, skeletonContent map[string]string) []mes
 }
 
 func main() {
-	files := getFileList()
+	projectPath := getProjectPath()
+
+	files := getFileList(projectPath)
 	messageMarkers := getMessageMarkers()
 	skeletonContent := loadSkeletonFileList()
 
