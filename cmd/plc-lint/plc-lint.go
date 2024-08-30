@@ -166,6 +166,7 @@ func loadFiles(path string) (map[string]string, CommandError) {
 					commandError = CreateCommandError(
 						exitcodes.CouldNotRead,
 						fmt.Sprintf("could not read file '%s': %v", file, err))
+
 					break
 				}
 
@@ -186,11 +187,11 @@ func loadSkeletonFileList() map[string]string {
 
 	if len(os.Args) > 2 {
 		skeletonPath := os.Args[2]
-		skeletonPath, pathError2 := getPath(skeletonPath)
+		skeletonPath, pathError := getPath(skeletonPath)
 
-		if pathError2.code != exitcodes.Ok {
-			_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError2.message)
-			os.Exit(pathError2.code)
+		if pathError.code != exitcodes.Ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", pathError.message)
+			os.Exit(pathError.code)
 		}
 
 		skeletonContent, fileListError = loadFiles(skeletonPath)
