@@ -26,7 +26,7 @@ import (
 	"internal/directoryList"
 	"internal/exitcodes"
 	"internal/message"
-	"internal/repositoryContents"
+	repo "internal/repositoryContents"
 	"os"
 	"path/filepath"
 	"strings"
@@ -178,6 +178,17 @@ func loadFiles(path string) (map[string]string, CommandError) {
 	return fileMap, commandError
 }
 
+func loadRepoLogs(path string) []repo.LogEntry {
+	repoLogs, err := repo.GetLogs(path)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(exitcodes.UnknownErrorOccurred)
+	}
+
+	return repoLogs
+}
+
 func loadSkeletonFileList() map[string]string {
 	var (
 		fileListError   CommandError
@@ -212,22 +223,22 @@ func loadSkeletonFileList() map[string]string {
 	return skeletonContent
 }
 
-func loadSkeletonRepoContent(repo string) (map[string]string, CommandError) {
+func loadSkeletonRepoContent(repoPath string) (map[string]string, CommandError) {
 	commandError := CreateCommandError(exitcodes.Ok, "")
 
-	files, err := repositoryContents.GetContent(repo)
+	files, err := repo.GetContent(repoPath)
 
 	if err != nil {
 		commandError = CreateCommandError(
 			exitcodes.UnknownErrorOccurred,
-			fmt.Sprintf("could not get content from '%s': %v", repo, err),
+			fmt.Sprintf("could not get content from '%s': %v", repoPath, err),
 		)
 	}
 
 	return files, commandError
 }
 
-func runChecks(files map[string]string, skeletonContent map[string]string) []message.Message {
+func runChecks(files map[string]string, skeletonContent map[string]string, repoLogs []repo.LogEntry) []message.Message {
 	var checks []message.Message
 
 	checks = append(checks, plc4.PLC4(files)...)
@@ -250,8 +261,9 @@ func main() {
 	files := getFileList(projectPath)
 	messageMarkers := getMessageMarkers()
 	skeletonContent := loadSkeletonFileList()
+	repoLogs := loadRepoLogs(projectPath)
 
-	checks := runChecks(files, skeletonContent)
+	checks := runChecks(files, skeletonContent, repoLogs)
 
 	for _, checkMessage := range checks {
 		marker := getMarkerForStatus(checkMessage.Status, messageMarkers)
