@@ -14,7 +14,7 @@ import (
 	plc9 "internal/checks/PLC09-yamllint-file"
 	// plc10 "internal/checks/PLC10-action.yml-file"
 	// plc11 "internal/checks/PLC11-Dockerfile"
-	// plc12 "internal/checks/PLC12-LICENSE-file"
+	plc12 "internal/checks/PLC12-LICENSE-file"
 	// plc13 "internal/checks/PLC13-README.md-file"
 	plc14 "internal/checks/PLC14-renovate.json-file"
 	plc15 "internal/checks/PLC15-app-folder"
@@ -245,6 +245,7 @@ func runChecks(files map[string]string, skeletonContent map[string]string, repoL
 	checks = append(checks, plc5.PLC5(files)...)
 	checks = append(checks, plc8.PLC8(files, skeletonContent)...)
 	checks = append(checks, plc9.PLC9(files, skeletonContent)...)
+	checks = append(checks, plc12.PLC12(files, skeletonContent, repoLogs)...)
 	checks = append(checks, plc14.PLC14(files, skeletonContent)...)
 	checks = append(checks, plc15.PLC15(files)...)
 	checks = append(checks, plc16.PLC16(files)...)
