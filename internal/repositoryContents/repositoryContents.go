@@ -2,6 +2,7 @@ package repositoryContents
 
 import (
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"io"
@@ -55,4 +56,29 @@ func GetContent(repo string) (map[string]string, error) {
 	}
 
 	return files, err
+}
+
+func GetLogs(path string) ([]LogEntry, error) {
+	var (
+		err  error
+		log  object.CommitIter
+		logs []LogEntry
+	)
+
+	repository, err := git.PlainOpen(path)
+
+	if err == nil && repository != nil {
+		log, err = repository.Log(&git.LogOptions{})
+		if err == nil && log != nil {
+			err = log.ForEach(func(commit *object.Commit) error {
+				logs = append(logs, LogEntry{
+					Timestamp: commit.Author.When,
+				})
+
+				return nil
+			})
+		}
+	}
+
+	return logs, err
 }
