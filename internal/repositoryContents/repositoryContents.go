@@ -8,27 +8,38 @@ import (
 )
 
 func GetContent(repo string) (map[string]string, error) {
-	files := make(map[string]string)
+	var (
+		buffer     []byte
+		commit     *object.Commit
+		err        error
+		files      map[string]string
+		reader     io.ReadCloser
+		ref        *plumbing.Reference
+		repository *git.Repository
+		tree       *object.Tree
+	)
 
-	repository, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{URL: repo})
+	files = make(map[string]string)
+
+	repository, err = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{URL: repo})
 
 	if err == nil && repository != nil {
-		ref, err := repository.Head()
+		ref, err = repository.Head()
 
 		if err == nil && ref != nil {
-			commit, err := repository.CommitObject(ref.Hash())
+			commit, err = repository.CommitObject(ref.Hash())
 
 			if err == nil && commit != nil {
-				tree, err := commit.Tree()
+				tree, err = commit.Tree()
 
 				if err == nil && tree != nil {
 					fileIter := tree.Files()
 
 					err = fileIter.ForEach(func(file *object.File) error {
-						reader, err := file.Blob.Reader()
+						reader, err = file.Blob.Reader()
 
 						if err == nil {
-							buffer, err := io.ReadAll(reader)
+							buffer, err = io.ReadAll(reader)
 
 							if err == nil {
 								contents := string(buffer)
