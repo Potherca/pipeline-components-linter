@@ -7,29 +7,31 @@ import (
 )
 
 func TestPLC8(t *testing.T) {
+	targetFile := ".mdlrc"
+
 	tests := map[string]struct {
 		files  map[string]string
 		repo   map[string]string
 		status map[string]check.Status
 	}{
-		".mdlrc file absent": {
+		targetFile + " file absent": {
 			files:  nil,
-			repo:   map[string]string{".mdlrc": "mock content"},
+			repo:   map[string]string{targetFile: "mock content"},
 			status: map[string]check.Status{"PLC8001": check.Skip},
 		},
-		".mdlrc file present but not identical": {
-			files:  map[string]string{".mdlrc": ""},
-			repo:   map[string]string{".mdlrc": "mock content"},
+		targetFile + " file present but not identical": {
+			files:  map[string]string{targetFile: ""},
+			repo:   map[string]string{targetFile: "mock content"},
 			status: map[string]check.Status{"PLC8001": check.Fail},
 		},
-		".mdlrc file present but missing in repo": {
-			files:  map[string]string{".mdlrc": "mock content"},
+		targetFile + " file present but missing in repo": {
+			files:  map[string]string{targetFile: "mock content"},
 			repo:   nil,
 			status: map[string]check.Status{"PLC8001": check.Error},
 		},
-		".mdlrc file present and identical": {
-			files:  map[string]string{".mdlrc": "mock content"},
-			repo:   map[string]string{".mdlrc": "mock content"},
+		targetFile + " file present and identical": {
+			files:  map[string]string{targetFile: "mock content"},
+			repo:   map[string]string{targetFile: "mock content"},
 			status: map[string]check.Status{"PLC8001": check.Pass},
 		},
 	}
