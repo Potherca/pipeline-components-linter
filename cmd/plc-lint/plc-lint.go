@@ -242,12 +242,16 @@ func loadSkeletonRepoContent(repoPath string) (map[string]string, CommandError) 
 }
 
 func printMessages(checks []message.Message) {
-	var checkMessages []string
+	checkMessages := []string{}
 
 	messageMarkers := getMessageMarkers()
 
 	for _, checkMessage := range checks {
-		checkMessages = append(checkMessages, fmt.Sprintf("%s %s %s\n", checkMessage.Code, getMarkerForStatus(checkMessage.Status, messageMarkers), checkMessage.Message))
+		statusMarker := getMarkerForStatus(checkMessage.Status, messageMarkers)
+		checkMessages = append(
+			checkMessages,
+			fmt.Sprintf("%s %s %s\n", checkMessage.Code, statusMarker, checkMessage.Message),
+		)
 	}
 
 	sortMessages(checkMessages)
@@ -260,7 +264,12 @@ func printMessages(checks []message.Message) {
 	}
 }
 
-func runChecks(projectPath string, files map[string]string, skeletonContent map[string]string, repoLogs []repo.LogEntry) []message.Message {
+func runChecks(
+	projectPath string,
+	files map[string]string,
+	skeletonContent map[string]string,
+	repoLogs []repo.LogEntry,
+) []message.Message {
 	var checks []message.Message
 
 	checks = append(checks, plc1.PLC1(projectPath, files, repoLogs)...)
@@ -282,17 +291,17 @@ func runChecks(projectPath string, files map[string]string, skeletonContent map[
 
 func sortMessages(checkMessages []string) []string {
 	// Change all instance of PLC\d{1}\d{3} to PLC0$1$2
-	re := regexp.MustCompile(`PLC0?(\d{1})(\d{3}) `)
+	pattern := regexp.MustCompile(`PLC0?(\d{1})(\d{3}) `)
 
 	for i, checkMessage := range checkMessages {
-		checkMessages[i] = re.ReplaceAllString(checkMessage, "PLC0$1$2 ")
+		checkMessages[i] = pattern.ReplaceAllString(checkMessage, "PLC0$1$2 ")
 	}
 
 	sort.Strings(checkMessages)
 
 	// Change all instance of PLC0\d{1}\d{2} back to PLC$1$2
 	for i, checkMessage := range checkMessages {
-		checkMessages[i] = re.ReplaceAllString(checkMessage, "PLC$1$2 ")
+		checkMessages[i] = pattern.ReplaceAllString(checkMessage, "PLC$1$2 ")
 	}
 
 	return checkMessages
