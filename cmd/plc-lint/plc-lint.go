@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"internal/check"
+	"regexp"
+	"sort"
+
 	// plc1 "internal/checks/PLC1-component"
 	// plc2 "internal/checks/PLC2-repository"
 	// plc3 "internal/checks/PLC3-commits"
@@ -238,6 +241,25 @@ func loadSkeletonRepoContent(repoPath string) (map[string]string, CommandError) 
 	return files, commandError
 }
 
+func printMessages(checks []message.Message) {
+	var checkMessages []string
+
+	messageMarkers := getMessageMarkers()
+
+	for _, checkMessage := range checks {
+		checkMessages = append(checkMessages, fmt.Sprintf("%s %s %s\n", checkMessage.Code, getMarkerForStatus(checkMessage.Status, messageMarkers), checkMessage.Message))
+	}
+
+	sortMessages(checkMessages)
+
+	_, err := fmt.Fprint(os.Stdout, strings.Join(checkMessages, ""))
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(exitcodes.CouldNotUpdate)
+	}
+}
+
 func runChecks(files map[string]string, skeletonContent map[string]string, repoLogs []repo.LogEntry) []message.Message {
 	var checks []message.Message
 
@@ -256,19 +278,32 @@ func runChecks(files map[string]string, skeletonContent map[string]string, repoL
 	return checks
 }
 
+func sortMessages(checkMessages []string) []string {
+	// Change all instance of PLC\d{1}\d{3} to PLC0$1$2
+	re := regexp.MustCompile(`PLC0?(\d{1})(\d{3}) `)
+
+	for i, checkMessage := range checkMessages {
+		checkMessages[i] = re.ReplaceAllString(checkMessage, "PLC0$1$2 ")
+	}
+
+	sort.Strings(checkMessages)
+
+	// Change all instance of PLC0\d{1}\d{2} back to PLC$1$2
+	for i, checkMessage := range checkMessages {
+		checkMessages[i] = re.ReplaceAllString(checkMessage, "PLC$1$2 ")
+	}
+
+	return checkMessages
+}
+
 func main() {
 	projectPath := getProjectPath()
 
 	files := getFileList(projectPath)
-	messageMarkers := getMessageMarkers()
 	skeletonContent := loadSkeletonFileList()
 	repoLogs := loadRepoLogs(projectPath)
 
 	checks := runChecks(files, skeletonContent, repoLogs)
 
-	for _, checkMessage := range checks {
-		marker := getMarkerForStatus(checkMessage.Status, messageMarkers)
-
-		_, _ = fmt.Fprintf(os.Stdout, "%s %s %s\n", checkMessage.Code, marker, checkMessage.Message)
-	}
+	printMessages(checks)
 }
