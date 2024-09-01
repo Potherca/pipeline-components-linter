@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"sort"
 
-	// plc1 "internal/checks/PLC1-component"
-	// plc2 "internal/checks/PLC2-repository"
-	// plc3 "internal/checks/PLC3-commits"
+	plc1 "internal/checks/PLC01-component"
+	// plc2 "internal/checks/PLC02-repository"
+	// plc3 "internal/checks/PLC03-commits"
 	plc4 "internal/checks/PLC04-folders"
 	plc5 "internal/checks/PLC05-files"
 	// plc6 "internal/checks/PLC6-gitignore-file
@@ -260,9 +260,11 @@ func printMessages(checks []message.Message) {
 	}
 }
 
-func runChecks(files map[string]string, skeletonContent map[string]string, repoLogs []repo.LogEntry) []message.Message {
+func runChecks(projectPath string, files map[string]string, skeletonContent map[string]string, repoLogs []repo.LogEntry) []message.Message {
 	var checks []message.Message
 
+	checks = append(checks, plc1.PLC1(projectPath, files, repoLogs)...)
+	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc5.PLC5(files)...)
 	checks = append(checks, plc8.PLC8(files, skeletonContent)...)
@@ -303,7 +305,7 @@ func main() {
 	skeletonContent := loadSkeletonFileList()
 	repoLogs := loadRepoLogs(projectPath)
 
-	checks := runChecks(files, skeletonContent, repoLogs)
+	checks := runChecks(projectPath, files, skeletonContent, repoLogs)
 
 	printMessages(checks)
 }
