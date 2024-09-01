@@ -19,19 +19,24 @@ func CompareFiles(
 	)
 
 	for targetFile := range fileCodes {
-		for subjectFile, contents := range repo {
-			if subjectFile == targetFile {
-				checkMessage = fmt.Sprintf("The `%[1]s` file MUST be identical to `%[1]s` file in the skeleton repository", targetFile)
+		if _, repoFileExists := repo[targetFile]; !repoFileExists {
+			status = check.Error
+			checkMessage = fmt.Sprintf("The `%[1]s` file is missing from the skeleton repository", targetFile)
+		} else {
+			for subjectFile, contents := range repo {
+				if subjectFile == targetFile {
+					checkMessage = fmt.Sprintf("The `%[1]s` file MUST be identical to `%[1]s` file in the skeleton repository", targetFile)
 
-				if _, ok := files[targetFile]; !ok {
-					status = check.Skip
-				} else if bytes.Equal([]byte(files[targetFile]), []byte(contents)) {
-					status = check.Pass
-				} else {
-					status = check.Fail
+					if _, targetFileExists := files[targetFile]; !targetFileExists {
+						status = check.Skip
+					} else if bytes.Equal([]byte(files[targetFile]), []byte(contents)) {
+						status = check.Pass
+					} else {
+						status = check.Fail
+					}
+
+					break
 				}
-
-				break
 			}
 		}
 
