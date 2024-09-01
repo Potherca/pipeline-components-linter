@@ -11,23 +11,23 @@ func TestPLC15(t *testing.T) {
 		files  map[string]string
 		status map[string]check.Status
 	}{
-		"app folder does not exist": {
+		"app/ folder absent": {
 			files:  nil,
 			status: map[string]check.Status{"PLC15001": check.Skip, "PLC15002": check.Skip, "PLC15003": check.Skip},
 		},
-		"app folder exist but is empty": {
+		"app/ folder present but empty": {
 			files:  map[string]string{"app/": "__DIR__"},
 			status: map[string]check.Status{"PLC15001": check.Fail, "PLC15002": check.Skip, "PLC15003": check.Skip},
 		},
-		"app folder exist and has non-gitkeep file": {
+		"app/ folder present with non-gitkeep file": {
 			files:  map[string]string{"app/": "__DIR__", "app/main.go": "__FILE__"},
 			status: map[string]check.Status{"PLC15001": check.Pass, "PLC15002": check.Skip, "PLC15003": check.Skip},
 		},
-		"app folder exist and has non-empty gitkeep file": {
+		"app/ folder present with non-empty gitkeep file": {
 			files:  map[string]string{"app/": "__DIR__", "app/.gitkeep": "content"},
 			status: map[string]check.Status{"PLC15001": check.Pass, "PLC15002": check.Pass, "PLC15003": check.Fail},
 		},
-		"app folder exist and has empty gitkeep file": {
+		"app/ folder present with empty gitkeep file": {
 			files:  map[string]string{"app/": "__DIR__", "app/.gitkeep": ""},
 			status: map[string]check.Status{"PLC15001": check.Pass, "PLC15002": check.Pass, "PLC15003": check.Pass},
 		},
