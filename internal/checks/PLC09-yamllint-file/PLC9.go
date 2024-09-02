@@ -6,17 +6,15 @@ import (
 )
 
 func listCodes() map[string]string {
-	codes := make(map[string]string)
-
-	codes["PLC9001"] = "The `.yamllint` file MUST be identical to `.yamllint` file in the skeleton repository"
-
-	return codes
+	return map[string]string{
+		"PLC9001": "The `.yamllint` file MUST be identical to `.yamllint` file in the skeleton repository",
+	}
 }
 
 func PLC9(files map[string]string, repo map[string]string) []message.Message {
-	var fileCodes = make(map[string]string)
-
-	fileCodes[".yamllint"] = "PLC9001"
+	var fileCodes = map[string]string{
+		".yamllint": "PLC9001",
+	}
 
 	return asserts.CompareFiles(files, repo, fileCodes)
 }

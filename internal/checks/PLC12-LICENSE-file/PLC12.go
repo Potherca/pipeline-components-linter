@@ -10,17 +10,15 @@ import (
 )
 
 func listCodes() map[string]string {
-	codes := make(map[string]string)
-
-	codes["PLC12001"] = "The `LICENSE` file MUST be an MIT License"
-	codes["PLC12002"] = "The `LICENSE` file MUST contain an attribution line"
-	codes["PLC12003"] = "The attribution line MUST contain the year the component was created"
-	codes["PLC12004"] = "The copyright year MAY contain a range of years"
-	codes["PLC12005"] = "The copyright range of years, when present, MUST be the same as the latest active year"
-	codes["PLC12006"] = "The attribution line MUST contain the copyright holder"
-	codes["PLC12007"] = "The copyright holder MUST be `pipeline-components` or `Robbert Müller`"
-
-	return codes
+	return map[string]string{
+		"PLC12001": "The `LICENSE` file MUST be an MIT License",
+		"PLC12002": "The `LICENSE` file MUST contain an attribution line",
+		"PLC12003": "The attribution line MUST contain the year the component was created",
+		"PLC12004": "The copyright year MAY contain a range of years",
+		"PLC12005": "The copyright range of years, when present, MUST be the same as the latest active year",
+		"PLC12006": "The attribution line MUST contain the copyright holder",
+		"PLC12007": "The copyright holder MUST be `pipeline-components` or `Robbert Müller`",
+	}
 }
 
 func PLC12(files map[string]string, repo map[string]string, logs []repositoryContents.LogEntry) []message.Message {

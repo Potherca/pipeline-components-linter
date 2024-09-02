@@ -15,17 +15,17 @@ func PLC16(files map[string]string) []message.Message {
 }
 
 func checkFiles(files map[string]string) []message.Message {
-	var fileCodes = make(map[string]string)
-
-	fileCodes[".github/FUNDING.yml"] = "PLC16001"
+	var fileCodes = map[string]string{
+		".github/FUNDING.yml": "PLC16001",
+	}
 
 	return asserts.FileExists(files, fileCodes)
 }
 
 func checkFolders(files map[string]string) []message.Message {
-	var fileCodes = make(map[string]string)
-
-	fileCodes[".github/workflows/"] = "PLC16002"
+	var fileCodes = map[string]string{
+		".github/workflows/": "PLC16002",
+	}
 
 	return asserts.FolderExists(files, fileCodes)
 }

@@ -10,13 +10,11 @@ import (
 )
 
 func listCodes() map[string]string {
-	codes := make(map[string]string)
-
-	codes["PLC1001"] = "The Pipeline Component MUST live in its own folder"
-	codes["PLC1002"] = "The Pipeline Component folder MUST be named after the main component it exposes"
-	codes["PLC1003"] = "The Pipeline Component folder MUST be a git repository"
-
-	return codes
+	return map[string]string{
+		"PLC1001": "The Pipeline Component MUST live in its own folder",
+		"PLC1002": "The Pipeline Component folder MUST be named after the main component it exposes",
+		"PLC1003": "The Pipeline Component folder MUST be a git repository",
+	}
 }
 
 func PLC1(projectPath string, files map[string]string, repoLogs []repo.LogEntry) []message.Message {

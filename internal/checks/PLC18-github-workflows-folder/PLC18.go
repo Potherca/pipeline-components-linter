@@ -6,17 +6,15 @@ import (
 )
 
 func listCodes() map[string]string {
-	codes := make(map[string]string)
-
-	codes["PLC18001"] = "The `workflows/` folder MUST contain a `release.yml` file"
-
-	return codes
+	return map[string]string{
+		"PLC18001": "The `workflows/` folder MUST contain a `release.yml` file",
+	}
 }
 
 func PLC18(files map[string]string) []message.Message {
-	var fileCodes = make(map[string]string)
-
-	fileCodes[".github/workflows/release.yml"] = "PLC18001"
+	var fileCodes = map[string]string{
+		".github/workflows/release.yml": "PLC18001",
+	}
 
 	return asserts.FileExists(files, fileCodes)
 }

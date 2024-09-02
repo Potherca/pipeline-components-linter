@@ -7,13 +7,11 @@ import (
 )
 
 func listCodes() map[string]string {
-	codes := make(map[string]string)
-
-	codes["PLC15001"] = "The `app/` folder MUST have content"
-	codes["PLC15002"] = "The `app/` folder content MAY be a `.gitkeep` file"
-	codes["PLC15003"] = "The `app/.gitkeep` file, when present, MUST be empty"
-
-	return codes
+	return map[string]string{
+		"PLC15001": "The `app/` folder MUST have content",
+		"PLC15002": "The `app/` folder content MAY be a `.gitkeep` file",
+		"PLC15003": "The `app/.gitkeep` file, when present, MUST be empty",
+	}
 }
 
 func PLC15(files map[string]string) []message.Message {
@@ -22,12 +20,13 @@ func PLC15(files map[string]string) []message.Message {
 		ok       bool
 	)
 
-	status := map[string]check.Status{}
 	codes := listCodes()
 
-	status["PLC15001"] = check.Fail
-	status["PLC15002"] = check.Skip
-	status["PLC15003"] = check.Skip
+	status := map[string]check.Status{
+		"PLC15001": check.Fail,
+		"PLC15002": check.Skip,
+		"PLC15003": check.Skip,
+	}
 
 	targetFile := "app/"
 
