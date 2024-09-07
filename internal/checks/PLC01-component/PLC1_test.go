@@ -3,7 +3,7 @@ package checks
 import (
 	"github.com/stretchr/testify/assert"
 	"internal/check"
-	repo "internal/repositoryContents"
+	repo "internal/repositorycontents"
 	"testing"
 )
 

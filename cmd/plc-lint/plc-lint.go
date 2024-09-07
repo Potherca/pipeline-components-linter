@@ -26,10 +26,10 @@ import (
 	plc18 "internal/checks/PLC18-github-workflows-folder"
 	plc19 "internal/checks/PLC19-release.yml-file"
 	// plc20 "internal/checks/PLC20-examples-folder"
-	"internal/directoryList"
+	"internal/directorylist"
 	"internal/exitcodes"
 	"internal/message"
-	repo "internal/repositoryContents"
+	repo "internal/repositorycontents"
 	"os"
 	"path/filepath"
 	"strings"
@@ -151,7 +151,7 @@ func loadFiles(path string) (map[string]string, CommandError) {
 
 	commandError := CreateCommandError(exitcodes.Ok, "")
 
-	files, err := directoryList.ListContent(path, "")
+	files, err := directorylist.ListContent(path, "")
 
 	if err != nil {
 		commandError = CreateCommandError(

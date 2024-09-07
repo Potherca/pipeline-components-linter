@@ -1,4 +1,4 @@
-module repositoryContents
+module repositorycontents
 
 go 1.22
 

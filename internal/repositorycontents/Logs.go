@@ -1,4 +1,4 @@
-package repositoryContents
+package repositorycontents
 
 import "time"
 

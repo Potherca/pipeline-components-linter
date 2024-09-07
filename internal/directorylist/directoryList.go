@@ -1,4 +1,4 @@
-package directoryList
+package directorylist
 
 import (
 	"fmt"

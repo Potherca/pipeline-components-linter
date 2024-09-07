@@ -3,7 +3,7 @@ package checks
 import (
 	"internal/check"
 	"internal/message"
-	"internal/repositoryContents"
+	"internal/repositorycontents"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,7 +21,7 @@ func listCodes() map[string]string {
 	}
 }
 
-func PLC12(files map[string]string, repo map[string]string, logs []repositoryContents.LogEntry) []message.Message {
+func PLC12(files map[string]string, repo map[string]string, logs []repositorycontents.LogEntry) []message.Message {
 	var (
 		messages []message.Message
 		ok       bool

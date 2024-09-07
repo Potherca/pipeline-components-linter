@@ -3,7 +3,7 @@ package checks
 import (
 	"internal/check"
 	"internal/message"
-	repo "internal/repositoryContents"
+	repo "internal/repositorycontents"
 	"path/filepath"
 	"regexp"
 	"strings"

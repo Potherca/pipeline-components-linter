@@ -6,7 +6,7 @@ require (
 	internal/asserts v0.1.0
 	internal/check v0.1.0
 	internal/message v0.1.0
-	internal/repositoryContents v0.1.0
+	internal/repositorycontents v0.1.0
 )
 
 require (
@@ -42,5 +42,5 @@ replace (
 	internal/asserts => ../asserts
 	internal/check => ../check
 	internal/message => ../message
-	internal/repositoryContents => ../repositoryContents
+	internal/repositorycontents => ../repositorycontents
 )
