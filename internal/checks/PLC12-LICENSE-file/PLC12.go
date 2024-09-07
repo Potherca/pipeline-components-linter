@@ -1,6 +1,7 @@
 package checks
 
 import (
+	"fmt"
 	"internal/check"
 	"internal/message"
 	"internal/repositorycontents"
@@ -44,8 +45,29 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 		fileContent := files[targetFile]
 
 		if strings.Contains(fileContent, "MIT License") {
-			status["PLC12001"] = check.Pass
 			lines := strings.Split(fileContent, "\n")
+
+			if _, repoFileExists := repo[targetFile]; !repoFileExists {
+				codes["PLC12001"] = fmt.Sprintf("The required `%s` file is missing from the skeleton repository", targetFile)
+				status["PLC12001"] = check.Error
+			} else {
+				seek := "Permission is hereby granted"
+
+				if strings.Contains(fileContent, seek) {
+					content := strings.Join(lines, " ")
+					skeletonContent := strings.Join(strings.Split(repo[targetFile], "\n"), " ")
+
+					index := strings.Index(content, seek)
+					skeletonIndex := strings.Index(skeletonContent, seek)
+
+					if fileContent[index:] == skeletonContent[skeletonIndex:] {
+						status["PLC12001"] = check.Pass
+					} else {
+						// TODO: Add a message that shows the difference between the two files
+					}
+				}
+			}
+
 			var attributionLine string
 
 			for _, line := range lines {
@@ -55,9 +77,7 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 				}
 			}
 
-			if attributionLine == "" {
-				status["PLC12002"] = check.Fail
-			} else {
+			if attributionLine != "" {
 				status["PLC12002"] = check.Pass
 				status["PLC12003"] = check.Fail
 
@@ -75,11 +95,13 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 						status["PLC12003"] = check.Pass
 					}
 
-					lastCommit := logs[len(logs)-1].Timestamp.Year()
-
-					if newestYear != 0 {
+					if newestYear == 0 {
+						status["PLC12004"] = check.Skip
+						status["PLC12005"] = check.Skip
+					} else {
 						status["PLC12004"] = check.Pass
-						status["PLC12005"] = check.Fail
+
+						lastCommit := logs[len(logs)-1].Timestamp.Year()
 
 						if newestYear == lastCommit {
 							status["PLC12005"] = check.Pass
