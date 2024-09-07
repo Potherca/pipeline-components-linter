@@ -21,7 +21,7 @@ func CompareFiles(
 	for targetFile := range fileCodes {
 		if _, repoFileExists := repo[targetFile]; !repoFileExists {
 			status = check.Error
-			checkMessage = fmt.Sprintf("The `%[1]s` file is missing from the skeleton repository", targetFile)
+			checkMessage = fmt.Sprintf("The required `%[1]s` file is missing from the skeleton repository", targetFile)
 		} else {
 			for subjectFile, contents := range repo {
 				if subjectFile == targetFile {
