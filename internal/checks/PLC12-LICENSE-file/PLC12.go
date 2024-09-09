@@ -38,19 +38,21 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 	targetFile := "LICENSE"
 
 	if _, ok = files[targetFile]; ok {
-		for code := range codes {
-			status[code] = check.Fail
-		}
+		if _, repoFileExists := repo[targetFile]; !repoFileExists {
+			codes["PLC12001"] = fmt.Sprintf("The required `%s` file is missing from the skeleton repository", targetFile)
+			status["PLC12001"] = check.Error
+		} else {
+			for code := range codes {
+				if code != "PLC12004" && code != "PLC12005" {
+					status[code] = check.Fail
+				}
+			}
 
-		fileContent := files[targetFile]
+			fileContent := files[targetFile]
 
-		if strings.Contains(fileContent, "MIT License") {
 			lines := strings.Split(fileContent, "\n")
 
-			if _, repoFileExists := repo[targetFile]; !repoFileExists {
-				codes["PLC12001"] = fmt.Sprintf("The required `%s` file is missing from the skeleton repository", targetFile)
-				status["PLC12001"] = check.Error
-			} else {
+			if strings.Contains(fileContent, "MIT License") {
 				seek := "Permission is hereby granted"
 
 				if strings.Contains(fileContent, seek) {
@@ -89,38 +91,42 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 					oldestYear, _ := strconv.Atoi(yearsMatch[yearsPattern.SubexpIndex("Year")])
 					newestYear, _ := strconv.Atoi(yearsMatch[yearsPattern.SubexpIndex("Range")])
 
-					firstCommit := logs[0].Timestamp.Year()
-
-					if oldestYear == firstCommit {
-						status["PLC12003"] = check.Pass
-					}
-
-					if newestYear == 0 {
-						status["PLC12004"] = check.Skip
-						status["PLC12005"] = check.Skip
+					if len(logs) == 0 {
+						codes["PLC12003"] = fmt.Sprintf("No log entries found for the repository")
+						status["PLC12003"] = check.Error
 					} else {
-						status["PLC12004"] = check.Pass
+						firstCommit := logs[0].Timestamp.Year()
 
-						lastCommit := logs[len(logs)-1].Timestamp.Year()
+						if oldestYear == firstCommit {
+							status["PLC12003"] = check.Pass
+						}
 
-						if newestYear == lastCommit {
-							status["PLC12005"] = check.Pass
+						if newestYear != 0 {
+							status["PLC12004"] = check.Pass
+
+							lastCommit := logs[len(logs)-1].Timestamp.Year()
+
+							if newestYear == lastCommit {
+								status["PLC12005"] = check.Pass
+							}
 						}
 					}
 				}
 
-				copyrightHolderPattern := regexp.MustCompile("[0-9]{4}(:?-[0-9]{4})?(?P<Holder>[^\n]+)")
+				copyrightHolderPattern := regexp.MustCompile(`(?:\([cC]\)|Copyright|[©Ⓒⓒ])(?:[0-9-\s]+)?(?P<Holder>[^\n]+)?`)
 
 				if copyrightHolderPattern.MatchString(attributionLine) {
-
-					status["PLC12006"] = check.Pass
 
 					holderMatch := copyrightHolderPattern.FindStringSubmatch(attributionLine)
 
 					holder := holderMatch[copyrightHolderPattern.SubexpIndex("Holder")]
 
-					if strings.Contains(holder, "pipeline-components") || strings.Contains(holder, "Pipeline Components") || strings.Contains(holder, "Robbert Müller") {
-						status["PLC12007"] = check.Pass
+					if holder != "" {
+						status["PLC12006"] = check.Pass
+
+						if strings.Contains(holder, "pipeline-components") || strings.Contains(holder, "Pipeline Components") || strings.Contains(holder, "Robbert Müller") {
+							status["PLC12007"] = check.Pass
+						}
 					}
 				}
 			}
