@@ -46,9 +46,9 @@ func TestPLC13(t *testing.T) {
 				"PLC13011": check.Skip,
 			},
 		},
-		targetFile + " file present, different headers, different sections": {
-			files: map[string]string{targetFile: "# Mock File content\n\n## Foo\n\n## Bar\n"},
-			repo:  map[string]string{targetFile: "# Mock Skeleton content\n\n## Baz\n\n## Qux\n"},
+		targetFile + " file present, incorrect header, different sections": {
+			files: map[string]string{targetFile: "# Mock File Header\n\n## Foo\n\n## Bar\n"},
+			repo:  map[string]string{targetFile: "# Mock Skeleton Header\n\n## Baz\n\n## Qux\n"},
 			status: map[string]check.Status{
 				"PLC13001": check.Skip,
 				"PLC13002": check.Fail,
@@ -63,14 +63,31 @@ func TestPLC13(t *testing.T) {
 				"PLC13011": check.Fail,
 			},
 		},
-		targetFile + " file present, different headers, same sections": {
-			files: map[string]string{targetFile: "# Mock File content\n\n## Foo\n\n## Bar\n"},
-			repo:  map[string]string{targetFile: "# Mock Skeleton content\n\n## Foo\n\n## Bar\n"},
+		targetFile + " file present, correct header, different sections": {
+			files: map[string]string{targetFile: "# Pipeline Components: Mock\n\n## Foo\n\n## Bar\n"},
+			repo:  map[string]string{targetFile: "# Mock Skeleton Header\n\n## Baz\n\n## Qux\n"},
+			status: map[string]check.Status{
+				"PLC13001": check.Skip,
+				"PLC13002": check.Pass,
+				"PLC13003": check.Fail,
+				"PLC13004": check.Fail,
+				"PLC13005": check.Fail,
+				"PLC13006": check.Fail,
+				"PLC13007": check.Fail,
+				"PLC13008": check.Fail,
+				"PLC13009": check.Fail,
+				"PLC13010": check.Fail,
+				"PLC13011": check.Fail,
+			},
+		},
+		targetFile + " file present, incorrect header, same sections": {
+			files: map[string]string{targetFile: "# Mock File Header\n\n## Foo\n\n## Bar\n"},
+			repo:  map[string]string{targetFile: "# Mock Skeleton Header\n\n## Foo\n\n## Bar\n"},
 			status: map[string]check.Status{
 				"PLC13001": check.Skip,
 				"PLC13002": check.Fail,
-				"PLC13003": check.Pass,
-				"PLC13004": check.Fail,
+				"PLC13003": check.Fail,
+				"PLC13004": check.Pass,
 				"PLC13005": check.Fail,
 				"PLC13006": check.Fail,
 				"PLC13007": check.Fail,

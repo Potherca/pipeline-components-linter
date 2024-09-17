@@ -7,6 +7,7 @@ import (
 	"internal/check"
 	"internal/message"
 	"reflect"
+	"strings"
 )
 
 const targetFile = "README.md"
@@ -15,8 +16,8 @@ func listCodes() map[string]string {
 	return map[string]string{
 		"PLC13001": "🤖 The `README.md` file MUST pass the linting rules defined in `.mdlrc`",
 		"PLC13002": "The `README.md` file MUST contain `# Pipeline Components: <component-name>` heading as the first line",
-		"PLC13003": "The `README.md` file MUST contain the same main sections, in the same order, as the `README.md` file in the skeleton repository",
-		"PLC13004": "The lines directly after the heading MUST contain the same badges/shields as the `README.md` file in the skeleton repository",
+		"PLC13003": "The lines directly after the heading MUST contain the same badges/shields as the `README.md` file in the skeleton repository",
+		"PLC13004": "The `README.md` file MUST contain the same main sections, in the same order, as the `README.md` file in the skeleton repository",
 		"PLC13005": "The 'Versioning', 'Support', and 'Contributing' sections in the `README.md` file MUST be identical to their counterparts in the `README.md` file in the skeleton repository",
 		"PLC13006": "⁉ The 'Examples' section in the `README.md` file MUST be auto-generated from a separate example file in the repository",
 		"PLC13007": "The 'Authors & contributors' section in the `README.md` file MUST state the author who initially set up the repository",
@@ -124,15 +125,22 @@ func PLC13(files map[string]string, repo map[string]string) []message.Message {
 			markdownParser := parser.NewWithExtensions(parser.CommonExtensions)
 			markdown := []byte(files[targetFile])
 			document := markdownParser.Parse(markdown)
-			subjectHeadings := getHeadings(document, 2, 2)
+
+			subjectHeadings := getHeadings(document, 1, 1)
+
+			if len(subjectHeadings) > 0 && strings.HasPrefix(subjectHeadings[0].content, "Pipeline Components: ") {
+				status["PLC13002"] = check.Pass
+			}
 
 			skeletonParser := parser.NewWithExtensions(parser.CommonExtensions)
 			skeletonMarkdown := []byte(repo[targetFile])
 			skeletonDocument := skeletonParser.Parse(skeletonMarkdown)
 			skeletonHeadings := getHeadings(skeletonDocument, 2, 2)
 
+			subjectHeadings = getHeadings(document, 2, 2)
+
 			if reflect.DeepEqual(subjectHeadings, skeletonHeadings) {
-				status["PLC13003"] = check.Pass
+				status["PLC13004"] = check.Pass
 			} // else { @TODO: Show the differences between the headings }
 		}
 	}
