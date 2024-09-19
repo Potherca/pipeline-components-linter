@@ -27,6 +27,8 @@ func TestPLC13(t *testing.T) {
 				"PLC13009": check.Skip,
 				"PLC13010": check.Skip,
 				"PLC13011": check.Skip,
+				"PLC13012": check.Skip,
+				"PLC13013": check.Skip,
 			},
 		},
 		targetFile + " file absent from skeleton repo": {
@@ -44,6 +46,8 @@ func TestPLC13(t *testing.T) {
 				"PLC13009": check.Skip,
 				"PLC13010": check.Skip,
 				"PLC13011": check.Skip,
+				"PLC13012": check.Skip,
+				"PLC13013": check.Skip,
 			},
 		},
 		targetFile + " file present, incorrect header, different sections": {
@@ -61,6 +65,8 @@ func TestPLC13(t *testing.T) {
 				"PLC13009": check.Fail,
 				"PLC13010": check.Fail,
 				"PLC13011": check.Fail,
+				"PLC13012": check.Fail,
+				"PLC13013": check.Fail,
 			},
 		},
 		targetFile + " file present, correct header, different sections": {
@@ -78,6 +84,8 @@ func TestPLC13(t *testing.T) {
 				"PLC13009": check.Fail,
 				"PLC13010": check.Fail,
 				"PLC13011": check.Fail,
+				"PLC13012": check.Fail,
+				"PLC13013": check.Fail,
 			},
 		},
 		targetFile + " file present, incorrect header, same sections": {
@@ -95,6 +103,8 @@ func TestPLC13(t *testing.T) {
 				"PLC13009": check.Fail,
 				"PLC13010": check.Fail,
 				"PLC13011": check.Fail,
+				"PLC13012": check.Fail,
+				"PLC13013": check.Fail,
 			},
 		},
 	}
