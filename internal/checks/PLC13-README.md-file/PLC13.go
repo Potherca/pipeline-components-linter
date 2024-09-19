@@ -2,7 +2,9 @@ package checks
 
 import (
 	"fmt"
+	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/md"
 	"github.com/gomarkdown/markdown/parser"
 	"internal/check"
 	"internal/message"
@@ -28,6 +30,12 @@ func listCodes() map[string]string {
 		"PLC13012": "The 'License' section in the `README.md` file MUST state the license type as MIT",
 		"PLC13013": "The 'License' section in the `README.md` file MUST link to the license file in the repository",
 	}
+}
+
+func appendNodeToDocument(parent *ast.Document, child ast.Node) {
+	child.SetParent(parent)
+	newChildren := append(parent.GetChildren(), child)
+	parent.SetChildren(newChildren)
 }
 
 func contentToString(literal []byte, content []byte) string {
@@ -100,6 +108,53 @@ func getHeadings(document ast.Node, minLevel int, maxLevel int) []struct {
 	return headings
 }
 
+func getSections(document ast.Node) map[string]string {
+	var (
+		currentSectionName string
+		sections           map[string]string
+	)
+
+	currentSection := &ast.Document{}
+	markdownRenderer := md.NewRenderer()
+	sections = make(map[string]string)
+
+	currentSectionName = "__ROOT__"
+
+	ast.WalkFunc(document, func(node ast.Node, entering bool) ast.WalkStatus {
+		if entering {
+			switch node := node.(type) {
+			case *ast.Text:
+			// Ignore
+
+			case *ast.Heading:
+				if node.Level == 1 {
+					currentSection = &ast.Document{}
+				} else if node.Level == 2 {
+					sections[currentSectionName] = string(markdown.Render(currentSection, markdownRenderer))
+					currentSection = &ast.Document{}
+					currentSectionName = ""
+
+					for _, child := range node.AsContainer().Children {
+						currentSectionName += getContentFromNode(child)
+					}
+				} else {
+					appendNodeToDocument(currentSection, node)
+				}
+
+			default:
+				appendNodeToDocument(currentSection, node)
+			}
+
+		} else if _, ok := node.(*ast.Document); ok {
+			sections[currentSectionName] = string(markdown.Render(currentSection, markdownRenderer))
+		}
+
+		return ast.GoToNext
+	})
+
+	return sections
+}
+
 func PLC13(files map[string]string, repo map[string]string) []message.Message {
 	var (
 		messages []message.Message
@@ -127,6 +182,7 @@ func PLC13(files map[string]string, repo map[string]string) []message.Message {
 			subjectParser := parser.NewWithExtensions(parser.CommonExtensions)
 			subjectMarkdown := []byte(files[targetFile])
 			subjectDocument := subjectParser.Parse(subjectMarkdown)
+			subjectSections := getSections(subjectDocument)
 
 			subjectHeadings := getHeadings(subjectDocument, 1, 1)
 
@@ -138,6 +194,11 @@ func PLC13(files map[string]string, repo map[string]string) []message.Message {
 			skeletonMarkdown := []byte(repo[targetFile])
 			skeletonDocument := skeletonParser.Parse(skeletonMarkdown)
 			skeletonHeadings := getHeadings(skeletonDocument, 2, 2)
+			skeletonSections := getSections(skeletonDocument)
+
+			if _, ok := subjectSections["__ROOT__"]; ok && subjectSections["__ROOT__"] == skeletonSections["__ROOT__"] {
+				status["PLC13003"] = check.Pass
+			}
 
 			subjectHeadings = getHeadings(subjectDocument, 2, 2)
 

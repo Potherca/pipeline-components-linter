@@ -6,6 +6,27 @@ import (
 	"testing"
 )
 
+const mockCorrectHeader = "# Pipeline Components: Mock\n"
+const mockIncorrectHeader = "# Mock Header\n"
+
+const mockCorrectSections = `
+## Usage
+## Examples
+## Versioning
+## Support
+## Contributing
+## Authors & contributors
+## License
+`
+
+const mockIncorrectSections = `
+## First Section
+## Second Section
+`
+
+const mockBadges = "[![A](B)](C)\n"
+const mockOtherBadges = "[![D](E)](F)\n"
+
 func TestPLC13(t *testing.T) {
 	tests := map[string]struct {
 		files  map[string]string
@@ -50,9 +71,9 @@ func TestPLC13(t *testing.T) {
 				"PLC13013": check.Skip,
 			},
 		},
-		targetFile + " file present, incorrect header, different sections": {
-			files: map[string]string{targetFile: "# Mock File Header\n\n## Foo\n\n## Bar\n"},
-			repo:  map[string]string{targetFile: "# Mock Skeleton Header\n\n## Baz\n\n## Qux\n"},
+		targetFile + " file present, incorrect header, different badges, different sections": {
+			files: map[string]string{targetFile: mockIncorrectHeader + mockBadges + mockIncorrectSections},
+			repo:  map[string]string{targetFile: mockIncorrectHeader + mockOtherBadges + mockCorrectSections},
 			status: map[string]check.Status{
 				"PLC13001": check.Skip,
 				"PLC13002": check.Fail,
@@ -69,9 +90,9 @@ func TestPLC13(t *testing.T) {
 				"PLC13013": check.Fail,
 			},
 		},
-		targetFile + " file present, correct header, different sections": {
-			files: map[string]string{targetFile: "# Pipeline Components: Mock\n\n## Foo\n\n## Bar\n"},
-			repo:  map[string]string{targetFile: "# Mock Skeleton Header\n\n## Baz\n\n## Qux\n"},
+		targetFile + " file present, correct header, different badges, different sections": {
+			files: map[string]string{targetFile: mockCorrectHeader + mockBadges + mockIncorrectSections},
+			repo:  map[string]string{targetFile: mockIncorrectHeader + mockOtherBadges + mockCorrectSections},
 			status: map[string]check.Status{
 				"PLC13001": check.Skip,
 				"PLC13002": check.Pass,
@@ -88,14 +109,52 @@ func TestPLC13(t *testing.T) {
 				"PLC13013": check.Fail,
 			},
 		},
-		targetFile + " file present, incorrect header, same sections": {
-			files: map[string]string{targetFile: "# Mock File Header\n\n## Foo\n\n## Bar\n"},
-			repo:  map[string]string{targetFile: "# Mock Skeleton Header\n\n## Foo\n\n## Bar\n"},
+		targetFile + " file present, incorrect header, different badges, same sections": {
+			files: map[string]string{targetFile: mockIncorrectHeader + mockBadges + mockCorrectSections},
+			repo:  map[string]string{targetFile: mockIncorrectHeader + mockOtherBadges + mockCorrectSections},
 			status: map[string]check.Status{
 				"PLC13001": check.Skip,
 				"PLC13002": check.Fail,
 				"PLC13003": check.Fail,
 				"PLC13004": check.Pass,
+				"PLC13005": check.Fail,
+				"PLC13006": check.Fail,
+				"PLC13007": check.Fail,
+				"PLC13008": check.Skip,
+				"PLC13009": check.Fail,
+				"PLC13010": check.Fail,
+				"PLC13011": check.Fail,
+				"PLC13012": check.Fail,
+				"PLC13013": check.Fail,
+			},
+		},
+		targetFile + " file present, correct header, different badges, same sections": {
+			files: map[string]string{targetFile: mockCorrectHeader + mockBadges + mockCorrectSections},
+			repo:  map[string]string{targetFile: mockIncorrectHeader + mockOtherBadges + mockCorrectSections},
+			status: map[string]check.Status{
+				"PLC13001": check.Skip,
+				"PLC13002": check.Pass,
+				"PLC13003": check.Fail,
+				"PLC13004": check.Pass,
+				"PLC13005": check.Fail,
+				"PLC13006": check.Fail,
+				"PLC13007": check.Fail,
+				"PLC13008": check.Skip,
+				"PLC13009": check.Fail,
+				"PLC13010": check.Fail,
+				"PLC13011": check.Fail,
+				"PLC13012": check.Fail,
+				"PLC13013": check.Fail,
+			},
+		},
+		targetFile + " file present, incorrect header, matching badges, different sections": {
+			files: map[string]string{targetFile: mockIncorrectHeader + mockBadges + mockIncorrectSections},
+			repo:  map[string]string{targetFile: mockIncorrectHeader + mockBadges + mockCorrectSections},
+			status: map[string]check.Status{
+				"PLC13001": check.Skip,
+				"PLC13002": check.Fail,
+				"PLC13003": check.Pass,
+				"PLC13004": check.Fail,
 				"PLC13005": check.Fail,
 				"PLC13006": check.Fail,
 				"PLC13007": check.Fail,
