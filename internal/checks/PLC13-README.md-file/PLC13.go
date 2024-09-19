@@ -119,7 +119,7 @@ func PLC13(files map[string]string, repo map[string]string) []message.Message {
 			status["PLC13002"] = check.Error
 		} else {
 			for code := range codes {
-				if code != "PLC13001" {
+				if code != "PLC13001" && code != "PLC13008" {
 					status[code] = check.Fail
 				}
 			}
