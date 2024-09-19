@@ -124,11 +124,11 @@ func PLC13(files map[string]string, repo map[string]string) []message.Message {
 				}
 			}
 
-			markdownParser := parser.NewWithExtensions(parser.CommonExtensions)
-			markdown := []byte(files[targetFile])
-			document := markdownParser.Parse(markdown)
+			subjectParser := parser.NewWithExtensions(parser.CommonExtensions)
+			subjectMarkdown := []byte(files[targetFile])
+			subjectDocument := subjectParser.Parse(subjectMarkdown)
 
-			subjectHeadings := getHeadings(document, 1, 1)
+			subjectHeadings := getHeadings(subjectDocument, 1, 1)
 
 			if len(subjectHeadings) > 0 && strings.HasPrefix(subjectHeadings[0].content, "Pipeline Components: ") {
 				status["PLC13002"] = check.Pass
@@ -139,7 +139,7 @@ func PLC13(files map[string]string, repo map[string]string) []message.Message {
 			skeletonDocument := skeletonParser.Parse(skeletonMarkdown)
 			skeletonHeadings := getHeadings(skeletonDocument, 2, 2)
 
-			subjectHeadings = getHeadings(document, 2, 2)
+			subjectHeadings = getHeadings(subjectDocument, 2, 2)
 
 			if reflect.DeepEqual(subjectHeadings, skeletonHeadings) {
 				status["PLC13004"] = check.Pass
