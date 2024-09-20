@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+const seekLicenseName = "MIT License"
+const seekLicenseText = "Permission is hereby granted"
+const targetFile = "LICENSE"
+
 func listCodes() map[string]string {
 	return map[string]string{
 		"PLC12001": "The `LICENSE` file MUST be an MIT License",
@@ -20,6 +24,60 @@ func listCodes() map[string]string {
 		"PLC12006": "The attribution line MUST contain the copyright holder",
 		"PLC12007": "The copyright holder MUST be `pipeline-components` or `Robbert Müller`",
 	}
+}
+
+func getAttributionLine(lines []string) string {
+	var attributionLine string
+
+	for _, line := range lines {
+		if strings.Contains(line, "(C)") || strings.Contains(line, "(c)") || strings.Contains(line, "Copyright") || strings.ContainsAny(line, "©Ⓒⓒ") {
+			attributionLine = line
+			break
+		}
+	}
+	return attributionLine
+}
+
+func getLicenseHolder(attributionLine string) string {
+	var holder string
+
+	copyrightHolderPattern := regexp.MustCompile(`(?:\([cC]\)|Copyright|[©Ⓒⓒ])(?:[0-9-\s]+)?(?P<Holder>[^\n]+)?`)
+
+	if copyrightHolderPattern.MatchString(attributionLine) {
+
+		holderMatch := copyrightHolderPattern.FindStringSubmatch(attributionLine)
+
+		holder = holderMatch[copyrightHolderPattern.SubexpIndex("Holder")]
+	}
+
+	return holder
+}
+
+func getLicenseTexts(fileContent string, repo map[string]string) (string, string) {
+	skeletonContent := strings.Join(strings.Split(repo[targetFile], "\n"), " ")
+
+	index := strings.Index(fileContent, seekLicenseText)
+	fileLicenseText := fileContent[index:]
+
+	skeletonIndex := strings.Index(skeletonContent, seekLicenseText)
+	skeletonLicenseText := skeletonContent[skeletonIndex:]
+
+	return fileLicenseText, skeletonLicenseText
+}
+
+func getLicenseYears(attributionLine string) (int, int) {
+	var oldestYear, newestYear int
+
+	yearsPattern := regexp.MustCompile("(?P<Year>[0-9]{4})(-(?P<Range>[0-9]{4}))?")
+
+	if yearsPattern.MatchString(attributionLine) {
+		yearsMatch := yearsPattern.FindStringSubmatch(attributionLine)
+
+		oldestYear, _ = strconv.Atoi(yearsMatch[yearsPattern.SubexpIndex("Year")])
+		newestYear, _ = strconv.Atoi(yearsMatch[yearsPattern.SubexpIndex("Range")])
+	}
+
+	return oldestYear, newestYear
 }
 
 func PLC12(files map[string]string, repo map[string]string, logs []repositorycontents.LogEntry) []message.Message {
@@ -34,8 +92,6 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 	for code := range codes {
 		status[code] = check.Skip
 	}
-
-	targetFile := "LICENSE"
 
 	if _, ok = files[targetFile]; ok {
 		if _, repoFileExists := repo[targetFile]; !repoFileExists {
@@ -52,17 +108,11 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 
 			lines := strings.Split(fileContent, "\n")
 
-			if strings.Contains(fileContent, "MIT License") {
-				seek := "Permission is hereby granted"
+			if strings.Contains(fileContent, seekLicenseName) {
+				if strings.Contains(fileContent, seekLicenseText) {
+					fileLicenseText, skeletonLicenseText := getLicenseTexts(fileContent, repo)
 
-				if strings.Contains(fileContent, seek) {
-					content := strings.Join(lines, " ")
-					skeletonContent := strings.Join(strings.Split(repo[targetFile], "\n"), " ")
-
-					index := strings.Index(content, seek)
-					skeletonIndex := strings.Index(skeletonContent, seek)
-
-					if fileContent[index:] == skeletonContent[skeletonIndex:] {
+					if fileLicenseText == skeletonLicenseText {
 						status["PLC12001"] = check.Pass
 					} else {
 						// TODO: Add a message that shows the difference between the two files
@@ -70,27 +120,15 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 				}
 			}
 
-			var attributionLine string
-
-			for _, line := range lines {
-				if strings.Contains(line, "(C)") || strings.Contains(line, "(c)") || strings.Contains(line, "Copyright") || strings.ContainsAny(line, "©Ⓒⓒ") {
-					attributionLine = line
-					break
-				}
-			}
+			attributionLine := getAttributionLine(lines)
 
 			if attributionLine != "" {
 				status["PLC12002"] = check.Pass
 				status["PLC12003"] = check.Fail
 
-				yearsPattern := regexp.MustCompile("(?P<Year>[0-9]{4})(-(?P<Range>[0-9]{4}))?")
+				oldestYear, newestYear := getLicenseYears(attributionLine)
 
-				if yearsPattern.MatchString(attributionLine) {
-					yearsMatch := yearsPattern.FindStringSubmatch(attributionLine)
-
-					oldestYear, _ := strconv.Atoi(yearsMatch[yearsPattern.SubexpIndex("Year")])
-					newestYear, _ := strconv.Atoi(yearsMatch[yearsPattern.SubexpIndex("Range")])
-
+				if oldestYear != 0 {
 					if len(logs) == 0 {
 						codes["PLC12003"] = fmt.Sprintf("No log entries found for the repository")
 						status["PLC12003"] = check.Error
@@ -113,20 +151,13 @@ func PLC12(files map[string]string, repo map[string]string, logs []repositorycon
 					}
 				}
 
-				copyrightHolderPattern := regexp.MustCompile(`(?:\([cC]\)|Copyright|[©Ⓒⓒ])(?:[0-9-\s]+)?(?P<Holder>[^\n]+)?`)
+				holder := getLicenseHolder(attributionLine)
 
-				if copyrightHolderPattern.MatchString(attributionLine) {
+				if holder != "" {
+					status["PLC12006"] = check.Pass
 
-					holderMatch := copyrightHolderPattern.FindStringSubmatch(attributionLine)
-
-					holder := holderMatch[copyrightHolderPattern.SubexpIndex("Holder")]
-
-					if holder != "" {
-						status["PLC12006"] = check.Pass
-
-						if strings.Contains(holder, "pipeline-components") || strings.Contains(holder, "Pipeline Components") || strings.Contains(holder, "Robbert Müller") {
-							status["PLC12007"] = check.Pass
-						}
+					if strings.Contains(holder, "pipeline-components") || strings.Contains(holder, "Pipeline Components") || strings.Contains(holder, "Robbert Müller") {
+						status["PLC12007"] = check.Pass
 					}
 				}
 			}
