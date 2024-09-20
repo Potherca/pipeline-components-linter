@@ -18,7 +18,7 @@ import (
 	// plc10 "internal/checks/PLC10-action.yml-file"
 	// plc11 "internal/checks/PLC11-Dockerfile"
 	plc12 "internal/checks/PLC12-LICENSE-file"
-	// plc13 "internal/checks/PLC13-README.md-file"
+	plc13 "internal/checks/PLC13-README.md-file"
 	plc14 "internal/checks/PLC14-renovate.json-file"
 	plc15 "internal/checks/PLC15-app-folder"
 	plc16 "internal/checks/PLC16-github-folder"
@@ -272,6 +272,8 @@ func runChecks(
 ) []message.Message {
 	var checks []message.Message
 
+	componentName := filepath.Base(projectPath)
+
 	checks = append(checks, plc1.PLC1(projectPath, files, repoLogs)...)
 	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc4.PLC4(files)...)
@@ -279,6 +281,7 @@ func runChecks(
 	checks = append(checks, plc8.PLC8(files, skeletonContent)...)
 	checks = append(checks, plc9.PLC9(files, skeletonContent)...)
 	checks = append(checks, plc12.PLC12(files, skeletonContent, repoLogs)...)
+	checks = append(checks, plc13.PLC13(componentName, files, skeletonContent)...)
 	checks = append(checks, plc14.PLC14(files, skeletonContent)...)
 	checks = append(checks, plc15.PLC15(files)...)
 	checks = append(checks, plc16.PLC16(files)...)
