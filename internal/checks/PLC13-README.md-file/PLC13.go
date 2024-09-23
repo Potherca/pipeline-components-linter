@@ -6,9 +6,9 @@ import (
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/md"
 	"github.com/gomarkdown/markdown/parser"
+	"internal/asserts"
 	"internal/check"
 	"internal/message"
-	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
@@ -162,20 +162,6 @@ func getSections(document ast.Node) map[string]string {
 	return sections
 }
 
-func urlResolves(url string) bool {
-	resolves := false
-
-	response, err := http.Get(url)
-
-	if err == nil {
-		if response.StatusCode >= 200 && response.StatusCode <= 399 {
-			resolves = true
-		}
-	}
-
-	return resolves
-}
-
 func PLC13(componentName string, files map[string]string, repo map[string]string) []message.Message {
 	var (
 		messages []message.Message
@@ -263,7 +249,7 @@ func PLC13(componentName string, files map[string]string, repo map[string]string
 								matches := linkPattern.FindStringSubmatch(split[1])
 								url := matches[linkPattern.SubexpIndex("URL")]
 
-								if urlResolves(url) {
+								if asserts.UrlResolves(url) {
 									status["PLC13011"] = check.Pass
 								}
 							}
@@ -280,7 +266,7 @@ func PLC13(componentName string, files map[string]string, repo map[string]string
 								status["PLC13012"] = check.Pass
 								status["PLC13013"] = check.Fail
 
-								if urlResolves(url) {
+								if asserts.UrlResolves(url) {
 									status["PLC13013"] = check.Pass
 								}
 							}
@@ -307,7 +293,7 @@ func PLC13(componentName string, files map[string]string, repo map[string]string
 								matches := linkPattern.FindStringSubmatch(split[1])
 								url := matches[linkPattern.SubexpIndex("URL")]
 
-								if urlResolves(url) {
+								if asserts.UrlResolves(url) {
 									status["PLC13015"] = check.Pass
 								}
 							}
@@ -335,7 +321,7 @@ func PLC13(componentName string, files map[string]string, repo map[string]string
 										url,
 									)
 
-									if urlResolves(url) {
+									if asserts.UrlResolves(url) {
 										status["PLC13018"] = check.Pass
 									}
 								}
