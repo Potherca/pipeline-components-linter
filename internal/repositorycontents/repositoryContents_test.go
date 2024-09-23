@@ -29,8 +29,9 @@ func createCommit(t *testing.T, repo *git.Repository, files map[string]string) s
 	return hash.String()
 }
 
+var mockError = errors.New("mock error")
+
 func TestGetContent(t *testing.T) {
-	mockError := errors.New("mock error")
 	mockFiles := map[string]string{"foo.txt": "foo content"}
 
 	tests := map[string]struct {
@@ -109,6 +110,76 @@ func TestGetContent(t *testing.T) {
 
 			// After
 			gitClone = originalFunction
+		})
+	}
+}
+
+func TestGetLogs(t *testing.T) {
+	tests := map[string]struct {
+		mockFunction func(string) (*git.Repository, error)
+		assertions   func([]LogEntry, error)
+	}{
+		"GetLogs should complain when repo could not be cloned": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				return nil, mockError
+			},
+			assertions: func(logs []LogEntry, err error) {
+				assert.Equal(t, mockError, err)
+				assert.Nil(t, logs)
+			},
+		},
+		"GetLogs should complain when cloned repo contains errors": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+
+				return repository, mockError
+			},
+			assertions: func(logs []LogEntry, err error) {
+				assert.Equal(t, mockError, err)
+				assert.Nil(t, logs)
+			},
+		},
+		"GetLogs should complain when repo does not contain commits": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+
+				return repository, nil
+			},
+			assertions: func(logs []LogEntry, err error) {
+				assert.Equal(t, errors.New("reference not found"), err)
+				assert.Nil(t, logs)
+			},
+		},
+		"GetLogs should return logs when repo contains commits": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+
+				createCommit(t, repository, nil)
+
+				return repository, nil
+			},
+			assertions: func(logs []LogEntry, err error) {
+				assert.Nil(t, err)
+				assert.Len(t, logs, 1)
+				assert.IsType(t, LogEntry{}, logs[0])
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Arrange
+			originalFunction := gitPlainOpen
+			gitPlainOpen = test.mockFunction
+
+			// Act
+			logs, err := GetLogs("/mock/path")
+
+			// Assert
+			test.assertions(logs, err)
+
+			// After
+			gitPlainOpen = originalFunction
 		})
 	}
 }
