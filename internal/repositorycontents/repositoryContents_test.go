@@ -5,6 +5,7 @@ import (
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/storage"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/stretchr/testify/assert"
@@ -96,10 +97,12 @@ func TestGetContent(t *testing.T) {
 		},
 	}
 
+	originalFunction := gitClone
+	defer func() { gitClone = originalFunction }()
+
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			// Arrange
-			originalFunction := gitClone
 			gitClone = test.mockFunction
 
 			// Act
@@ -107,9 +110,6 @@ func TestGetContent(t *testing.T) {
 
 			// Assert
 			test.assertions(content, err)
-
-			// After
-			gitClone = originalFunction
 		})
 	}
 }
@@ -166,10 +166,12 @@ func TestGetLogs(t *testing.T) {
 		},
 	}
 
+	originalFunction := gitPlainOpen
+	defer func() { gitPlainOpen = originalFunction }()
+
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			// Arrange
-			originalFunction := gitPlainOpen
 			gitPlainOpen = test.mockFunction
 
 			// Act
@@ -177,9 +179,92 @@ func TestGetLogs(t *testing.T) {
 
 			// Assert
 			test.assertions(logs, err)
+		})
+	}
+}
 
-			// After
-			gitPlainOpen = originalFunction
+func TestGetDetails(t *testing.T) {
+	tests := map[string]struct {
+		mockFunction func(string) (*git.Repository, error)
+		assertions   func(Details, error)
+	}{
+		"GetDetails should complain when repo could not be cloned": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				return nil, mockError
+			},
+			assertions: func(details Details, err error) {
+				assert.Equal(t, mockError, err)
+				assert.Len(t, details, 0)
+			},
+		},
+		"GetDetails should complain when cloned repo contains errors": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				repository, _ := git.Init(memory.NewStorage(), nil)
+
+				return repository, mockError
+			},
+			assertions: func(details Details, err error) {
+				assert.Equal(t, mockError, err)
+				assert.Len(t, details, 0)
+			},
+		},
+		"GetDetails should return an empty list when repo does not contain remote": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+
+				createCommit(t, repository, nil)
+
+				return repository, nil
+			},
+			assertions: func(details Details, err error) {
+				assert.Nil(t, err)
+				assert.Len(t, details, 0)
+			},
+		},
+		"GetDetails should return details when repo contains remote": {
+			mockFunction: func(path string) (*git.Repository, error) {
+				repository, _ := git.Init(memory.NewStorage(), nil) // memfs.New()
+
+				repository.CreateRemote(&config.RemoteConfig{
+					Name: "origin",
+					URLs: []string{"http://foo/foo.git"},
+				})
+
+				repository.CreateBranch(&config.Branch{
+					Name:   "master",
+					Remote: "origin",
+					Merge:  "refs/remotes/origin/master",
+				})
+
+				return repository, nil
+			},
+			assertions: func(details Details, err error) {
+				assert.Nil(t, err)
+				assert.Len(t, details, 1)
+				assert.NotEmpty(t, details["origin"])
+				assert.IsType(t, RepoDetails{}, details["origin"])
+
+				actual := details["origin"]
+				expected := RepoDetails{Remotes: []string{"http://foo/foo.git"}, Branches: []string(nil)}
+
+				assert.Equal(t, expected, actual)
+			},
+		},
+	}
+
+	originalFunction := gitPlainOpen
+	defer func() { gitPlainOpen = originalFunction }()
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Arrange
+			gitPlainOpen = test.mockFunction
+
+			// Act
+			details, err := GetDetails("/mock/path")
+
+			// Assert
+			test.assertions(details, err)
 		})
 	}
 }
