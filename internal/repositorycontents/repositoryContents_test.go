@@ -50,7 +50,7 @@ func TestGetContent(t *testing.T) {
 		},
 		"GetContent should complain when cloned repo contains errors": {
 			mockFunction: func(s storage.Storer, worktree billy.Filesystem, o *git.CloneOptions) (*git.Repository, error) {
-				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+				repository, _ := git.Init(memory.NewStorage(), nil)
 
 				return repository, mockError
 			},
@@ -61,7 +61,7 @@ func TestGetContent(t *testing.T) {
 		},
 		"GetContent should complain when cloned repo does not contain commits": {
 			mockFunction: func(s storage.Storer, worktree billy.Filesystem, o *git.CloneOptions) (*git.Repository, error) {
-				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+				repository, _ := git.Init(memory.NewStorage(), nil)
 
 				return repository, nil
 			},
@@ -130,7 +130,7 @@ func TestGetLogs(t *testing.T) {
 		},
 		"GetLogs should complain when cloned repo contains errors": {
 			mockFunction: func(path string) (*git.Repository, error) {
-				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+				repository, _ := git.Init(memory.NewStorage(), nil)
 
 				return repository, mockError
 			},
@@ -141,7 +141,7 @@ func TestGetLogs(t *testing.T) {
 		},
 		"GetLogs should complain when repo does not contain commits": {
 			mockFunction: func(path string) (*git.Repository, error) {
-				repository, _ := git.Init(memory.NewStorage(), memfs.New())
+				repository, _ := git.Init(memory.NewStorage(), nil)
 
 				return repository, nil
 			},
