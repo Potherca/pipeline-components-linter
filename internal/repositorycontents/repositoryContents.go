@@ -8,6 +8,9 @@ import (
 	"io"
 )
 
+var gitClone = git.Clone
+var gitPlainOpen = git.PlainOpen
+
 func GetContent(repo string) (map[string]string, error) {
 	var (
 		buffer     []byte
@@ -22,7 +25,7 @@ func GetContent(repo string) (map[string]string, error) {
 
 	files = make(map[string]string)
 
-	repository, err = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{URL: repo})
+	repository, err = gitClone(memory.NewStorage(), nil, &git.CloneOptions{URL: repo})
 
 	if err == nil && repository != nil {
 		ref, err = repository.Head()
@@ -65,7 +68,7 @@ func GetLogs(path string) ([]LogEntry, error) {
 		logs []LogEntry
 	)
 
-	repository, err := git.PlainOpen(path)
+	repository, err := gitPlainOpen(path)
 
 	if err == nil && repository != nil {
 		log, err = repository.Log(&git.LogOptions{})
