@@ -165,7 +165,7 @@ func TestPLC2(t *testing.T) {
 				resp := &http.Response{
 					StatusCode: 200,
 					Body: io.NopCloser(bytes.NewBufferString(
-						`[{"default": true, "name": "main", "protected": false, "web_url": "https://gitlab.com/pipeline-components/foo/-/tree/mock-branch"}]`),
+						`[{"default": true, "name": "main", "protected": true, "web_url": "https://gitlab.com/pipeline-components/foo/-/tree/mock-branch"}]`),
 					),
 				}
 
@@ -176,7 +176,7 @@ func TestPLC2(t *testing.T) {
 				"PLC2002": check.Pass,
 				"PLC2003": check.Pass,
 				"PLC2004": check.Pass,
-				"PLC2005": check.Fail,
+				"PLC2005": check.Pass,
 			},
 		},
 	}
