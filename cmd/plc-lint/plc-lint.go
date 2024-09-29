@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"internal/check"
+	"internal/repositorycontents"
 	"regexp"
 	"sort"
 
 	plc1 "internal/checks/PLC01-component"
-	// plc2 "internal/checks/PLC02-repository"
+	plc2 "internal/checks/PLC02-repository"
 	// plc3 "internal/checks/PLC03-commits"
 	plc4 "internal/checks/PLC04-folders"
 	plc5 "internal/checks/PLC05-files"
@@ -192,6 +193,17 @@ func loadRepoLogs(path string) []repo.LogEntry {
 	return repoLogs
 }
 
+func loadRepoDetails(path string) repositorycontents.Details {
+	repoDetails, err := repo.GetDetails(path)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(exitcodes.UnknownErrorOccurred)
+	}
+
+	return repoDetails
+}
+
 func loadSkeletonFileList() map[string]string {
 	var (
 		fileListError   CommandError
@@ -269,12 +281,14 @@ func runChecks(
 	files map[string]string,
 	skeletonContent map[string]string,
 	repoLogs []repo.LogEntry,
+	repoDetails repositorycontents.Details,
 ) []message.Message {
 	var checks []message.Message
 
 	componentName := filepath.Base(projectPath)
 
 	checks = append(checks, plc1.PLC1(projectPath, files, repoLogs)...)
+	checks = append(checks, plc2.PLC2(repoDetails)...)
 	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc4.PLC4(files)...)
 	checks = append(checks, plc5.PLC5(files)...)
@@ -316,8 +330,8 @@ func main() {
 	files := getFileList(projectPath)
 	skeletonContent := loadSkeletonFileList()
 	repoLogs := loadRepoLogs(projectPath)
-
-	checks := runChecks(projectPath, files, skeletonContent, repoLogs)
+	repoDetails := loadRepoDetails(projectPath)
+	checks := runChecks(projectPath, files, skeletonContent, repoLogs, repoDetails)
 
 	printMessages(checks)
 }
