@@ -6,7 +6,11 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"io"
+	"strings"
 )
+
+var gitClone = git.Clone
+var gitPlainOpen = git.PlainOpen
 
 func GetContent(repo string) (map[string]string, error) {
 	var (
@@ -22,7 +26,7 @@ func GetContent(repo string) (map[string]string, error) {
 
 	files = make(map[string]string)
 
-	repository, err = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{URL: repo})
+	repository, err = gitClone(memory.NewStorage(), nil, &git.CloneOptions{URL: repo})
 
 	if err == nil && repository != nil {
 		ref, err = repository.Head()
@@ -58,6 +62,61 @@ func GetContent(repo string) (map[string]string, error) {
 	return files, err
 }
 
+func GetDetails(path string) (Details, error) {
+	var (
+		err     error
+		details Details
+	)
+
+	details = Details{}
+
+	repository, err := gitPlainOpen(path)
+
+	if err == nil && repository != nil {
+		remotes, err := repository.Remotes()
+
+		if err == nil && remotes != nil {
+			for _, remote := range remotes {
+				var (
+					branches []string
+				)
+
+				remoteName := remote.Config().Name
+				refs, _ := repository.References()
+
+				err = refs.ForEach(func(ref *plumbing.Reference) error {
+					if ref.Name().IsRemote() && strings.HasPrefix(ref.Name().Short(), remoteName+"/") {
+						after, _ := strings.CutPrefix(ref.Name().Short(), remoteName+"/")
+						branches = append(branches, after)
+					}
+					return nil
+				})
+
+				details[remoteName] = RepoDetails{
+					Branches: branches,
+					Remotes:  remote.Config().URLs,
+				}
+			}
+		}
+	}
+
+	if err == nil && repository != nil {
+		/*		log, err = repository.Log(&git.LogOptions{})
+				if err == nil && log != nil {
+					err = log.ForEach(func(commit *object.Commit) error {
+						details = append(details, LogEntry{
+							Timestamp: commit.Author.When,
+						})
+
+						return nil
+					})
+				}
+		*/
+	}
+
+	return details, err
+}
+
 func GetLogs(path string) ([]LogEntry, error) {
 	var (
 		err  error
@@ -65,7 +124,7 @@ func GetLogs(path string) ([]LogEntry, error) {
 		logs []LogEntry
 	)
 
-	repository, err := git.PlainOpen(path)
+	repository, err := gitPlainOpen(path)
 
 	if err == nil && repository != nil {
 		log, err = repository.Log(&git.LogOptions{})
