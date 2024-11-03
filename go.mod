@@ -1,4 +1,4 @@
-module gitlab.com/pipeline-components/pipeline-component-linter
+module gitlab.com/pipeline-components/org/pipeline-components-linter
 
 go 1.22
 
